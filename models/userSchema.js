@@ -1,4 +1,4 @@
-const mongoose =requir('mongoose');
+const mongoose =require('mongoose');
 const{Schema,ObjectId}= mongoose;
 
 const UserSchema =new Schema({
@@ -6,17 +6,21 @@ const UserSchema =new Schema({
         type:String,
         require:true
     },
-    Email:{
+    email:{
         type:String,
         require:true
     },
-    Password:{
+    password:{
         type:String,
         require:true
     },
     Status:{
         type:String,
         default:'Active'
+    },
+    isBlocked: {
+        type: Boolean,
+        default: false
     },
     Address: [{
         Name: {
@@ -41,4 +45,4 @@ const UserSchema =new Schema({
 })
 
 const User= mongoose.model('User',UserSchema);
-module.exports=User
+module.exports=User;
