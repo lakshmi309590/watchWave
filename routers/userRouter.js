@@ -3,7 +3,8 @@ const Router = express.Router();
 
 const userController = require("../controllers/userController");
 const userProfileController = require("../controllers/userProfileController");
-
+const { isLogged } = require("../Authentication/auth")
+const productController = require("../controllers/productContollers")
 // Router.get("/pageNotFound", userController.pageNotFound);
 
 // User action
@@ -14,6 +15,7 @@ Router.get("/signup", userController.getSignUpPage);
 Router.post("/signup", userController.signUpUser);
 Router.post('/verify-otp', userController.verifyOtp);
 Router.post("/resendOtp", userController.resendOtp);
+Router.get("/logout", isLogged, userController.getLogoutUser)
 
 
 
@@ -22,5 +24,8 @@ Router.post("/forgotEmailValid", userProfileController.forgotEmailValid);
 Router.post("/verifyPassOtp", userProfileController.verifyForgotPassOtp);
 Router.get("/resetPassword", userProfileController.getResetPassPage);
 Router.post("/changePassword", userProfileController.postNewPassword);
+
+
+
 
 module.exports = Router;

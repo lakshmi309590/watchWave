@@ -41,9 +41,9 @@ const addProducts = async (req, res) => {
                 salePrice: products.regularPrice,
                 createdOn: new Date(),
                 quantity: products.quantity,
-                size: products.size,
+                
                 color: products.color,
-                processor: products.processor,
+               
                 productImage: images
             })
             await newProduct.save()
@@ -183,7 +183,7 @@ const getAllProducts = async (req, res) => {
 
 
 
-        res.render("admin/products", {
+        res.render("admin/product", {
             data: productData,
             currentPage: page,
             totalPages: Math.ceil(count / limit)
@@ -201,7 +201,7 @@ const getBlockProduct = async (req, res) => {
         let id = req.query.id
         await Product.updateOne({ _id: id }, { $set: { isBlocked: true } })
         console.log("product blocked")
-        res.redirect("admin/products")
+        res.redirect("admin/product")
     } catch (error) {
         console.log(error.message);
     }
@@ -213,7 +213,7 @@ const getUnblockProduct = async (req, res) => {
         let id = req.query.id
         await Product.updateOne({ _id: id }, { $set: { isBlocked: false } })
         console.log("product unblocked")
-        res.redirect("admin/products")
+        res.redirect("admin/product")
     } catch (error) {
         console.log(error.message);
     }

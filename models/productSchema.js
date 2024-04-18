@@ -13,10 +13,7 @@ const productSchema = Mongoose.Schema({
         type : String,
         required : true,
     },
-    brand : {
-        type : String,
-        required : true,
-    },
+   
     category : {
         type : String,
         required : true,
@@ -45,18 +42,12 @@ const productSchema = Mongoose.Schema({
         type : Array,
         required : true,
     },
-    size : {
-        type : String,
-        required : true
-    },
+ 
     color : {
         type : String,
         required : true,
     },
-    processor : {
-        type : String,
-        required : true
-    },
+    
     productOffer : {
         type : Number,
         default : 0

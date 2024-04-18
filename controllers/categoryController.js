@@ -38,7 +38,7 @@ const addCategory =async(req,res)=>{
 const getAllCategories = async (req, res) => {
     try {
         const categoryData = await Category.find({})
-        res.render("/admin/category", { cat: categoryData })
+        res.render("admin/category", { cat: categoryData })
     } catch (error) {
         console.log(error.message);
     }

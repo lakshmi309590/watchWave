@@ -268,12 +268,15 @@ const getLogoutUser = async (req, res) => {
                 console.log(err.message);
             }
             console.log("Logged out");
-            res.redirect("user/login")
+            res.redirect("login")
         })
     } catch (error) {
         console.log(error.message);
     }
 }
+
+
+
 
 
 
