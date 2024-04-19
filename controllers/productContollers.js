@@ -158,42 +158,6 @@ const editProduct = async (req, res) => {
 }
 
 
-const getAllProducts = async (req, res) => {
-    try {
-        const search = req.query.search || ""
-        const page = req.query.page || 1
-        const limit = 4
-        const productData = await Product.find({
-            $or: [
-                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
-                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
-            ],
-        })
-            .sort({ createdOn: -1 })
-            .limit(limit * 1)
-            .skip((page - 1) * limit)
-            .exec()
-
-        const count = await Product.find({
-            $or: [
-                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
-                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
-            ],
-        }).countDocuments()
-
-
-
-        res.render("admin/product", {
-            data: productData,
-            currentPage: page,
-            totalPages: Math.ceil(count / limit)
-
-        });
-
-    } catch (error) {
-        console.log(error.message);
-    }
-}
 
 
 const getBlockProduct = async (req, res) => {
