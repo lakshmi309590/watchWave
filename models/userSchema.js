@@ -2,10 +2,11 @@ const mongoose =require('mongoose');
 const{Schema,ObjectId}= mongoose;
 
 const UserSchema =new Schema({
-    UserName:{
+    Name:{
         type:String,
         require:true
     },
+    
     email:{
         type:String,
         require:true

@@ -19,11 +19,35 @@ const pageNotFound = async (req, res) => {
     }
 }
 
+const contact = async (req, res) => {
+    try {
+        res.render('user/page-contact');
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
+const shopProduct= async (req, res) => {
+    try {
+        res.render('user/shop-product');
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+const about = async (req, res) => {
+    try {
+        res.render('user/page-about');
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 const home = async (req, res) => {
     try {
-        const products = await Product.find();
-        res.render('user/home',{ products: products });
+        const listedCategories = await Category.find({ isListed: true }).select('name');
+        const categoryNames = listedCategories.map(category => category.name);
+        const products = await Product.find({ isBlocked: false })
+        res.render('user/home', { products:products ,categoryNames: categoryNames });
+        console.log(products)
     } catch (error) {
         console.log(error);
     }
@@ -72,8 +96,9 @@ function generateOtp() {
 }
 
 const signUpUser = async (req, res) => {
+    console.log(req.body);
     try {
-        const { email } = req.body;
+        const { email,Name } = req.body;
         const findUser = await User.findOne({ email });
         if (req.body.password === req.body.cPassword) {
             if (!findUser) {
@@ -98,6 +123,8 @@ const signUpUser = async (req, res) => {
                     req.session.userOtp = otp;
                     req.session.userData = req.body;
                     req.session.userData.isBlocked = false;
+                    req.session.userData.Name = Name;
+
                     res.render("user/verify-otp", { email });
                     console.log("Email sent", info.messageId);
                 } else {
@@ -135,12 +162,14 @@ const verifyOtp = async (req, res) => {
             console.log("the referralCode  =>" + referalCode);
 
             const saveUserData = new User({
-                name: user.name,
+                Name: user.Name,
                 email: user.email,
                 phone: user.phone,
                 password: passwordHash,
                 referalCode : referalCode
+                
             })
+            console.log("User data from session:", req.session.userData);
 
             await saveUserData.save()
 
@@ -229,14 +258,18 @@ const userLogin = async (req, res) => {
         const findUser = await User.findOne({ email: email });
         console.log("Found User:", findUser);
 
+        const products = await Product.find();
+        
+
         if (findUser) {
             if (findUser.password) {
                 const passwordMatch = await bcrypt.compare(password, findUser.password);
                 if (passwordMatch) {
                     res.locals.user = {
                         _id: findUser._id,
-                        UserName: findUser.UserName, // Include the user's name
+                        UserName: findUser.UserName, 
                     };
+      
                     req.session.user = findUser._id;
                     console.log("Logged in successfully");
 
@@ -245,7 +278,7 @@ const userLogin = async (req, res) => {
                         console.log("User is blocked by admin");
                         return res.status(403).render("user/login", { message: "User is blocked by admin" });
                     } else {
-                        return res.render("user/home"); // Redirect to home page or wherever appropriate
+               return  res.render('user/home', { products:products }); // Redirect to home page or wherever appropriate
                     }
                 } else {
                     console.log("Password is not matching");
@@ -293,9 +326,9 @@ const getProductDetailsPage = async (req, res) => {
         }
         console.log(findProduct.id, "Hello world");
         if (user) {
-            res.render("product-details", { data: findProduct, totalOffer, user: user })
+            res.render("user/product-details", { data: findProduct, totalOffer, user: user })
         } else {
-            res.render("product-details", { data: findProduct, totalOffer })
+            res.render("user/product-details", { data: findProduct, totalOffer })
         }
     } catch (error) {
         console.log(error.message);
@@ -303,32 +336,33 @@ const getProductDetailsPage = async (req, res) => {
 }
 
 
-const getShopPage = async (req,res)=>{
-    try{
-        const user=req.session.id
-        const product=await product.find({isBlocked:false})
-        const categories=await Category.find({isListed:true})
-     
-        let itemsPerPage =6
-        let currentPage=parseInt(req.query.page)||1
-        let startIndex= (currentPage-1)*itemsPerPage
-        let endIndex = startIndex + itemsPerPage
-        let totalPages = Math.ceil(product.length / 6)
-        const currentProduct = product.slice(startIndex, endIndex)
 
-        res.render("shop",{
-            user:user,
-            product:currentProduct,
-            category:categories,
-            count:count,
+const getShopPage = async (req, res) => {
+    try {
+        const user = req.session.id;
+        const products = await Product.find({ isBlocked: false });
+        const categories = await Category.find({ isListed: true });
+
+        let itemsPerPage = 6;
+        let currentPage = parseInt(req.query.page) || 1;
+        let startIndex = (currentPage - 1) * itemsPerPage;
+        let endIndex = startIndex + itemsPerPage;
+        let totalPages = Math.ceil(products.length / 6);
+        const currentProduct = products.slice(startIndex, endIndex);
+
+        res.render("shop", {
+            user: user,
+            product: currentProduct,
+            category: categories,
+            count: count, // You might need to define `count` somewhere
             totalPages,
             currentPage
-        })
-    }catch(error){
-        console.log(error.message)
+        });
+    } catch (error) {
+        console.log(error.message);
     }
-  
 }
+
 
 const searchProducts = async (req, res) => {
     try {
@@ -505,6 +539,8 @@ module.exports = {
     searchProducts,
     filterProduct,
     filterByPrice,
-    getSortProducts
-
+    getSortProducts,
+    contact,
+    about ,
+    shopProduct
 }

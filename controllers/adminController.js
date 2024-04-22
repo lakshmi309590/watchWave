@@ -20,7 +20,7 @@ const verifyLogin = async (req, res) => {
         if (email === hardcodedAdminEmail && password === hardcodeAdminPassword) {
             req.session.admin = true;
             console.log("Admin Logged In");
-            res.redirect("/admin");
+            res.redirect("/admin/users");
         } else {
             // If credentials do not match, redirect back to login page with error message
             console.log("Incorrect email or password");

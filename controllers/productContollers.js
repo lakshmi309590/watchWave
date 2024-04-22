@@ -47,7 +47,7 @@ const addProducts = async (req, res) => {
                 productImage: images
             })
             await newProduct.save()
-            res.redirect("admin/products")
+            res.redirect("/admin/products")
             // res.json("success")
         } else {
 
@@ -65,8 +65,8 @@ const getEditProduct = async (req, res) => {
         const findProduct = await Product.findOne({ _id: id })
 
         const category = await Category.find({})
-        const findBrand = await Brand.find({})
-        res.render("admin/edit-product", { product: findProduct, cat: category, brand: findBrand })
+       
+        res.render("admin/edit-product", { product: findProduct, cat: category})
     } catch (error) {
         console.log(error.message);
     }
@@ -117,37 +117,37 @@ const editProduct = async (req, res) => {
                 id: Date.now(),
                 productName: data.productName,
                 description: data.description,
-                brand: data.brand,
+               
                 category: data.category,
                 regularPrice: data.regularPrice,
 
                 quantity: data.quantity,
                 size: data.size,
                 color: data.color,
-                processor: data.processor,
+               
                 createdOn: new Date(),
                 productImage: images
             }, { new: true })
             console.log("product updated");
-            res.redirect("admin/products")
+            res.redirect("/admin/products")
         } else {
             console.log("No images i thter")
             const updatedProduct = await Product.findByIdAndUpdate(id, {
                 id: Date.now(),
                 productName: data.productName,
                 description: data.description,
-                brand: data.brand,
+                
                 category: data.category,
                 regularPrice: data.regularPrice,
                 salePrice: data.regularPrice,
                 quantity: data.quantity,
                 size: data.size,
                 color: data.color,
-                processor: data.processor,
+              
                 createdOn: new Date(),
             }, { new: true })
             console.log("product updated");
-            res.redirect("admin/products")
+            res.redirect("/admin/products")
         }
 
 
@@ -158,6 +158,43 @@ const editProduct = async (req, res) => {
 }
 
 
+const getAllProducts = async (req, res) => {
+    try {
+        const search = req.query.search || ""
+        const page = req.query.page || 1
+        const limit = 4
+        const productData = await Product.find({
+            $or: [
+                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
+            ],
+        })
+            .sort({ createdOn: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .exec()
+
+        const count = await Product.find({
+            $or: [
+                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
+            ],
+        }).countDocuments()
+
+
+
+        res.render("admin/product", {
+            data: productData,
+            currentPage: page,
+            totalPages: Math.ceil(count / limit)
+
+        });
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 
 
 const getBlockProduct = async (req, res) => {
@@ -165,7 +202,7 @@ const getBlockProduct = async (req, res) => {
         let id = req.query.id
         await Product.updateOne({ _id: id }, { $set: { isBlocked: true } })
         console.log("product blocked")
-        res.redirect("admin/product")
+        res.redirect("/admin/products")
     } catch (error) {
         console.log(error.message);
     }
@@ -177,7 +214,7 @@ const getUnblockProduct = async (req, res) => {
         let id = req.query.id
         await Product.updateOne({ _id: id }, { $set: { isBlocked: false } })
         console.log("product unblocked")
-        res.redirect("admin/product")
+        res.redirect("/admin/products")
     } catch (error) {
         console.log(error.message);
     }
