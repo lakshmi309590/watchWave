@@ -4,6 +4,7 @@ const Router = express.Router();
 const userController = require("../controllers/userController");
 const userProfileController = require("../controllers/userProfileController");
 const { isLogged } = require("../Authentication/auth")
+
 const productController = require("../controllers/productContollers")
 // Router.get("/pageNotFound", userController.pageNotFound);
 
@@ -29,7 +30,15 @@ Router.get("/resetPassword", userProfileController.getResetPassPage);
 Router.post("/changePassword", userProfileController.postNewPassword);
 
 
-
+// User profile
+Router.get("/profile", isLogged, userProfileController.getUserProfile)
+Router.get("/addAddress", isLogged, userProfileController.getAddressAddPage)
+Router.post("/addAddress", isLogged, userProfileController.postAddress)
+Router.get("/editAddress", isLogged, userProfileController.getEditAddress),
+Router.post("/editAddress", isLogged, userProfileController.postEditAddress)
+Router.get("/deleteAddress", isLogged, userProfileController.getDeleteAddress)
+Router.post("/editUserDetails", isLogged, userProfileController.editUserDetails)
+Router.post("/verifyReferalCode", isLogged, userProfileController.verifyReferalCode)
 
 // Products based routes
 Router.get("/productDetails", userController.getProductDetailsPage)

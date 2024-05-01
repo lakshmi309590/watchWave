@@ -7,7 +7,7 @@ const customerController = require("../controllers/customerController")
 const categoryController = require("../controllers/categoryController")
 // const productController = require("../controllers/productController")
 
-// const { isAdmin } = require("../Authentication/auth")
+
 Router.get("/login", adminController.getLoginPage)
 Router.post("/login", adminController.verifyLogin)
 Router.get("/",adminController.adminDashboard);
@@ -16,6 +16,8 @@ Router.get("/",adminController.adminDashboard);
 Router.get("/users", customerController.getCustomerInfo)
 Router.get("/blockCustomer", customerController.getCustomerBlocked)
 Router.get("/unblockCustomer", customerController.getCustomerUnblocked)
+
+Router.get('/logout', adminController.getLogout);
 
 // Category Management
 Router.get("/category", categoryController.getCategoryInfo)

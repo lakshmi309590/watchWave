@@ -255,6 +255,8 @@ const userLogin = async (req, res) => {
         console.log("Email:", email);
 
         // Find user by email
+        const listedCategories = await Category.find({ isListed: true }).select('name');
+        const categoryNames = listedCategories.map(category => category.name);
         const findUser = await User.findOne({ email: email });
         console.log("Found User:", findUser);
 
@@ -278,7 +280,7 @@ const userLogin = async (req, res) => {
                         console.log("User is blocked by admin");
                         return res.status(403).render("user/login", { message: "User is blocked by admin" });
                     } else {
-               return  res.render('user/home', { products:products }); // Redirect to home page or wherever appropriate
+               return  res.render('user/home', { products:products,categoryNames: categoryNames }); // Redirect to home page or wherever appropriate
                     }
                 } else {
                     console.log("Password is not matching");
