@@ -2,8 +2,10 @@ const express = require('express');
 const Router = express.Router();
 
 const userController = require("../controllers/userController");
+const cartController = require("../controllers/cartController")
 const userProfileController = require("../controllers/userProfileController");
 const { isLogged } = require("../Authentication/auth")
+const orderController = require("../controllers/orderController")
 
 const productController = require("../controllers/productContollers")
 // Router.get("/pageNotFound", userController.pageNotFound);
@@ -47,5 +49,23 @@ Router.get("/search", userController.searchProducts)
 Router.get("/filter", userController.filterProduct)
 Router.get("/filterPrice", userController.filterByPrice)
 Router.post("/sortProducts", userController.getSortProducts)
+
+// Cart
+Router.get("/cart", isLogged, cartController.getCartPage)
+Router.post("/addToCart", isLogged, cartController.addToCart)
+Router.post("/changeQuantity", isLogged, cartController.changeQuantity)
+Router.get("/deleteItem", isLogged, cartController.deleteProduct)
+
+
+//Orders
+Router.get("/checkout",isLogged, orderController.getCheckoutPage)
+Router.post("/orderPlaced", isLogged, orderController.orderPlaced)
+Router.get("/orderDetails", isLogged, orderController.getOrderDetailsPage)
+Router.get("/cancelOrder", isLogged, orderController.cancelOrder)
+Router.get("/return", isLogged, orderController.returnOrder)
+Router.get("/checkoutCart", isLogged, orderController.getCartCheckoutPage)
+
+Router.get("/invoice", orderController.getInvoice)
+
 
 module.exports = Router;

@@ -343,13 +343,11 @@
                 displayErrorMessage("productName-error", "Product Name is required");
                 isValid = false;
             }
-
-            // Check if prices are positive numbers
-            if (isNaN(regularPrice) || regularPrice <= 0) {
-                displayErrorMessage("regularPrice-error", "Regular price must be a positive number");
-                isValid = false;
-            }
-
+  // Check if prices are positive numbers
+  if (isNaN(regularPrice) || regularPrice <= 0) {
+        displayErrorMessage("regularPrice-error", "Regular price must be a positive number");
+        isValid = false;
+    }
 
 
 

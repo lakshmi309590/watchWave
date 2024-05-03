@@ -23,6 +23,9 @@ const UserSchema =new Schema({
         type: Boolean,
         default: false
     },
+    cart: {
+        type: Array
+    },
     Address: [{
         Name: {
             type: String

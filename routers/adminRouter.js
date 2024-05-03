@@ -3,6 +3,7 @@ const express = require('express');
 const Router = express.Router()
 const adminController = require("../controllers/adminController")
 const productController = require("../controllers/productContollers")
+const orderController = require("../controllers/orderController")
 const customerController = require("../controllers/customerController")
 const categoryController = require("../controllers/categoryController")
 // const productController = require("../controllers/productController")
@@ -46,6 +47,9 @@ Router.get("/unBlockProduct",  productController.getUnblockProduct)
 Router.post("/addProductOffer",  productController.addProductOffer)
 Router.post("/removeProductOffer",  productController.removeProductOffer)
 
-
+// Order Management
+Router.get("/orderList",  orderController.getOrderListPageAdmin)
+Router.get("/orderDetailsAdmin",  orderController.getOrderDetailsPageAdmin)
+Router.get("/changeStatus", orderController.changeOrderStatus)
 
 module.exports=Router;

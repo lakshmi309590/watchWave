@@ -204,47 +204,55 @@
 
 
         <script>
-            function addToCart(prodId) {
-
-                var quantity = 1;
-                $.ajax({
-                    url: `/addToCart?id=${prodId}`,
-                    method: "post",
-                    data: {
-                        quantity: quantity
-                    },
-                    success: (res) => {
-                        if (res.status === true) {
-
-                            Swal.fire({
-                                title: 'Added to Cart!',
-                                text: 'Continue Shopping',
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
-                            })
-                        } else if (res.status === "Out of stock") {
-                            Swal.fire({
-                                title: 'Stock!!',
-                                text: "The product is out of stock",
-                                icon: 'error', // Corrected from 'fail' to 'error'
-                                timer: 2000,
-                            })
-                        } else {
-                            Swal.fire({
-                                title: 'You need to Login first',
-                                text: 'Continue Shopping',
-                                icon: 'warning',
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => { window.location.href = '/login' });
-                        }
-                    },
-                    error: (err) => {
-                        console.error(err, "hello");
-                        res.alert("error occured")
-                    }
+           function addToCart(prodId) {
+    var quantity = 1;
+    $.ajax({
+        url: `/addToCart?id=${prodId}`,
+        method: "post",
+        data: {
+            quantity: quantity
+        },
+        success: function(res) {
+            console.log(res); // Log the response for debugging
+            if (res.status === true) {
+                // Product added successfully
+                Swal.fire({
+                    title: 'Added to Cart!',
+                    text: 'Continue Shopping',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
                 });
+            } else if (res.status === "Out of stock") {
+                // Product is out of stock
+                Swal.fire({
+                    title: 'Stock!!',
+                    text: "The product is out of stock",
+                    icon: 'error',
+                    timer: 2000,
+                });
+            } else {
+                // User needs to login first
+                Swal.fire({
+                    title: 'You need to Login first',
+                    text: 'Continue Shopping',
+                    icon: 'warning',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => { window.location.href = '/login' });
             }
+        },
+        error: function(err) {
+            console.error(err); // Log any errors for debugging
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred. Please try again later.',
+                icon: 'error',
+                timer: 2000,
+            });
+        }
+    });
+}
+
 
         </script>

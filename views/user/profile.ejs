@@ -60,7 +60,7 @@
                                                 details</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="page-login-register.html"><i
+                                            <a class="nav-link" href="/logout"><i
                                                     class="fi-rs-sign-out mr-10"></i>Logout</a>
                                         </li>
                                     </ul>
@@ -176,38 +176,61 @@
 
 
 
-                                    <div class="tab-pane fade" id="referal" role="tabpanel"
-                                        aria-labelledby="track-orders-tab">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h5 class="mb-0">Referal Offer</h5>
-                                            </div>
-                                            <div class="card-body contact-from-area">
+                                    <div class="tab-pane fade" id="wallet-history" role="tabpanel"
+                                    aria-labelledby="orders-tab">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">Wallet History</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Date</th>
+                                                            <th>Status</th>
+                                                            <th>Amount</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
 
-                                                <div class="row">
-                                                    <div class="col-lg-8 mx-auto text-center mt-50">
-                                                        <form onsubmit="verifyReferalCode(event)" method="post" action="">
-                                                           
+                                                        <% if (user.history) { %>
 
-                                                            <div class="mt-60">
-                                                                <h5>Do you have a code?</h5>
-                                                                <br>
-                                                                <input class="border-1" id="referalCode" type="text"
-                                                                    name="referalCode" required
-                                                                    style="border: 1px solid #000; width: 200px;">
-                                                                <br><br>
-                                                                <button type="submit">Get reward</button>
-                                                            </div>
+                                                            <% for (let i=0; i < user.history.length; i++) { %>
+                                                                <tr>
+                                                                    <td>
+                                                                        <% const dateObject=(user.history[i].date
+                                                                            instanceof Date) ? user.history[i].date
+                                                                            : new Date(user.history[i].date); %>
+                                                                            <%= dateObject.toLocaleDateString() %>
+                                                                    </td>
 
-                                                        </form>
-                                                    </div>
-                                                </div>
+                                                                    <td>
+                                                                        <%= user.history[i].status %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <% if (user.history[i].status==="debit" ) {
+                                                                            %>
+                                                                            -<%= user.history[i].amount %>
+                                                                                <% }else{ %>
+                                                                                    <%= user.history[i].amount %>
+                                                                                        <% } %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% } %>
 
+                                                                    <% }else{ %>
 
+                                                                        <td>No Orders found</td>
 
+                                                                        <% } %>
+
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
 
 

@@ -1,6 +1,7 @@
 const User = require("../models/userSchema");
 const Product=require("../models/productSchema")
 const Address= require("../models/addressSchema")
+const Order = require("../models/orderSchema")
 const nodemailer =require("nodemailer");
 const bcrypt =require("bcryptjs");
 
@@ -11,7 +12,8 @@ const getUserProfile = async(req,res)=>{
         const userId = req.session.user
         const userData =await User.findById({_id:userId});
         const addressData =await Address.findOne({userId:userId})
-        res.render("user/profile",{user:userData,userAddress:addressData})
+        const orderData = await Order.find({ userId: userId }).sort({ createdOn: -1 })
+        res.render("user/profile",{user:userData,userAddress:addressData,order: orderData })
     }catch(error){
         console.log(error.message)
     }
@@ -32,7 +34,7 @@ const editUserDetails = async(req,res)=>{
             }
         )
         .then((data)=>console.log(data))
-        res.redirect("/profile")
+        res.redirect("user/profile")
     }catch(error){
         console.log(error.message)
     }
@@ -96,7 +98,7 @@ const postAddress = async(req,res)=>{
             })
             await userAddress.save()
         }
-        res.redirect("/profile")
+        res.redirect("profile")
     }
     catch (error) {
         console.log(error.message);
@@ -111,9 +113,9 @@ const getEditAddress = async(req,res)=>{
             "address._id": addressId,
         })
         const addressData = currAddress.address.find((item)=>{
-            return item._id.toString()== addressIdString()
+            return item._id.toString()== addressId
         })
-        res.render("edit-address",{address:addressData, user:user})
+        res.render("user/edit-address",{address:addressData, user:user})
     }catch(error){
         console.log(error.message)
     }
@@ -151,7 +153,7 @@ const postEditAddress = async(req,res)=>{
             }
         }
     ).then((result)=>{
-        res.redirect("/profile")
+        res.redirect("profile")
     })
     }catch(error){
         console.log(error.message)
@@ -172,7 +174,7 @@ const getDeleteAddress = async(req,res)=>{
                 }
             }
         )
-        .then((data)=>res.redirect("/profile")
+        .then((data)=>res.redirect("profile")
     )
     }catch(error){
         console.log(error.message)
@@ -316,7 +318,7 @@ const verifyReferalCode = async (req, res) => {
         const alreadyRedeemed = codeOwner.redeemedUsers.includes(currentUser._id)
 
         if (alreadyRedeemed) {
-            console.log("You have already used this referral code!");
+                      console.log("You have already used this referral code!");
             res.json({ message: "You have already used this referral code!" })
             return
         } else {
