@@ -1,5 +1,13 @@
 <%- include("../partial/userHeader") %>
 
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/medium-zoom/0.5.0/medium-zoom.min.js"></script>
+
+
+</head>
+
+
 
     <main class="main">
         <div class="page-header breadcrumb-wrap">
@@ -53,12 +61,19 @@
                                                 role="tab" aria-controls="address" aria-selected="true"><i
                                                     class="fi-rs-marker mr-10"></i>My Address</a>
                                         </li>
+                                        
                                         <li class="nav-item">
                                             <a class="nav-link" id="account-detail-tab" data-bs-toggle="tab"
                                                 href="#account-detail" role="tab" aria-controls="account-detail"
                                                 aria-selected="true"><i class="fi-rs-sign-out mr-10"></i>Account
                                                 details</a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="change-password-tab" data-bs-toggle="tab" href="#reset-password" role="tab" aria-controls="reset-password" aria-selected="false">
+                                                <i class="fi-rs-key mr-10"></i>Change Password
+                                            </a>
+                                        </li>
+                                        
                                         <li class="nav-item">
                                             <a class="nav-link" href="/logout"><i
                                                     class="fi-rs-sign-out mr-10"></i>Logout</a>
@@ -75,9 +90,9 @@
                                                 <h5 class="mb-0">User Profile</h5>
                                             </div>
                                             <div class="card-body text-center">
-                                                <img src="/user-assets/imgs/theme/icons/user-profile.svg"
-                                                    class="card-img-top rounded-circle mx-auto mt-3" alt="Profile Image"
-                                                    style="width: 100px; height: 100px; object-fit: cover;">
+                                                <img class="svgInject" alt="Evara" src="/assets/imgs/theme/icons/user-profile.svg"
+                                                    class="card-img-top rounded-circle mx-auto mt-3" alt="Profile Image" style="width: 100px; height: 100px; object-fit: cover;">
+                                                    
                                                 <div class="card-body text-center">
                                                     <h5 class="card-title">
                                                         <%= user.name %>
@@ -85,9 +100,7 @@
                                                     <p class="card-text"><strong>Email:</strong>
                                                         <%= user.email %>
                                                     </p>
-                                                    <p class="card-text"><strong>Phone:</strong>
-                                                        <%= user.phone %>
-                                                    </p>
+                                                  
                                                     <p class="card-text"><strong>Account Id:</strong>
                                                         <%= user._id %>
                                                     </p>
@@ -113,7 +126,38 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
+                                                          
+                                                            <% if (order) { %>
 
+                                                                <% for (let i=0; i < order.length; i++) { %>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <%= order[i]._id %>
+                                                                        </td>
+
+                                                                        <td>
+                                                                            <%= order[i].status %>
+                                                                        </td>
+
+
+                                                                        <td>
+                                                                            <%= order[i].totalPrice %>
+                                                                        </td>
+
+
+                                                                        <td><a href="/orderDetails?id=<%= order[i]._id %>"
+                                                                                class="btn-small d-block">View</a></td>
+                                                                    </tr>
+                                                                    <% } %>
+
+
+                                                                        <% }else{ %>
+
+                                                                            <td>No Orders found</td>
+
+                                                                            <% } %>
+
+                                                        </tbody>
                                                     
 
                                                     </table>
@@ -244,6 +288,7 @@
 
                                             <%if(userAddress){%>
                                                 <%userAddress.address.forEach((address)=>{%>
+
                                                     <div class="col-lg-6">
                                                         <div class="card  mb-3 mb-lg-0">
                                                             <div class="card-header">
@@ -302,6 +347,9 @@
 
                                         </div>
                                     </div>
+                                    <div class="tab-pane fade" id="reset-password" role="tabpanel" aria-labelledby="change-password-tab">
+                                             <%- include('reset-password') %>
+                                     </div>
                                     <div class="tab-pane fade" id="account-detail" role="tabpanel"
                                         aria-labelledby="account-detail-tab">
                                         <div class="card">

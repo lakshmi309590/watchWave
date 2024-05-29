@@ -45,7 +45,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th>#ID</th>
+                            
                             <th scope="col">Name</th>
                             <th scope="col">Phone</th>
                             <th scope="col">Total</th>
@@ -60,7 +60,7 @@
                         <% for (let i = 0; i < orders.length; i++) { %>
                             
                             <tr>
-                            <td><%= orders[i]._id %></td>
+                            
                             <td><b><%= orders[i].address[0].name %></b></td>
                             <td><%= orders[i].address[0].phone %></td>
                             <td><%= orders[i].totalPrice.toLocaleString() %></td>

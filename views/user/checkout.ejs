@@ -137,161 +137,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 mt-50 ">
-                        <div class="payment_method">
-                            <div class="mb-25 ml-150">
-                                <h5>Payment</h5>
-                            </div>
-                            <div class="custome-radio ml-150">
-                                <input class="form-check-input payment" type="radio" value="cod" name="payment_option"
-                                    id="CashOnDelivey" checked="">
-                                <label class="form-check-label" for="CashOnDelivey" data-bs-toggle="collapse"
-                                    data-target="#CashOnDelivey" aria-controls="CashOnDelivey">Cash on
-                                    Delivery</label>
-                            </div>
-                            <div class="custome-radio ml-150">
-                                <input class="form-check-input payment" required="" value="wallet" type="radio"
-                                    name="payment_option" id="wallet" checked="">
-                                <label class="form-check-label" for="wallet" data-bs-toggle="collapse"
-                                    data-target="#wallet" aria-controls="paypal">Wallet</label>
-                            </div>
-                            <div class="custome-radio ml-150">
-                                <input class="form-check-input payment" required="" value="online" type="radio"
-                                    name="payment_option" id="Razorpay" checked="">
-                                <label class="form-check-label" for="Razorpay" data-bs-toggle="collapse"
-                                    data-target="#Razorpay" aria-controls="paypal">Razorpay</label>
-                            </div>
-
-                            <div class="mb-25 ml-150 pt-40">
-                                <h5>Available Coupons</h5>
-                            </div>
-
-                            <ul>
-                                <% if (locals.coupons) { %>
-                                    <% for (let i=0; i < coupons.length; i++) { %>
-                                        <li>
-                                            <div class="coupon-card col-4" style="margin-left: 150px; margin-top: 20px;">
-                                                <div class="coupon-details">
-                                                    <span class="coupon-name">
-                                                        <%= coupons[i].name %>
-                                                    </span><br>
-                                                    <!-- Add other coupon details if needed -->
-                                                </div>
-                                                <button onclick="useCoupon('<%= coupons[i].name %>')" id="useButton_<%= coupons[i].name %>" class="use-button">Use</button>
-                                                <button onclick="cancelCoupon('<%= coupons[i].name %>')" id="cancelButton_<%= coupons[i].name %>" class="cancel-button btn-danger" style="display: none;">Cancel</button>
-                                            </div>
-                                        </li>
-                                        
-                                        <% } %>
-                                            <% }else{ %>
-
-                                                <h3>No coupons available</h3>
-
-                                                <% } %>
-                            </ul>
-
-
-
-
-                        </div>
-
-                    </div>
-
-
-
-
-
-                    <div class="container col-6 mt-3">
-
-
-
-
-
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                      
-                            <% if (isSingle===true) { %>
-                                <% totalAmount +=product[0].salePrice; %>
-                                    <% }else{ %>
-
-                                        <% for (let i=0; i < data.length; i++) { %>
-
-                                            <% totalAmount +=data[i].productDetails[0].salePrice * data[i].quantity %>
-
-
-                                            
-                                                <% } %>
-
-                                                
-                                                    <% } %>
-                                                    
-                                                    <!-- Display total and shipping information outside the loop -->
-                                                    <div class="ml-150">
-                                                            <table class="table mt-45">
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <th>Shipping</th>
-                                                                        <td colspan="2"><em>Free Shipping</em></td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th>Discount</th>
-                                                                        <td colspan="2" id="discount">
-                                                                            <% if (locals.offerPrice) { %>
-                                                                                <%= locals.offerPrice %>
-                                                                            <% }else{ %>
-                                                                                 0
-                                                                                <% } %>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <th>Total for All Products</th>
-                                                                        <td colspan="2" class="product-subtotal"
-                                                                        >
-                                                                            <span class="font-xl text-brand fw-900" id="totalValue"><%=
-                                                                                    totalAmount %></span>
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-
-                                                            <div class="ml-65">
-                                                                <%if(isSingle===true){%>
-                                                                    <button type="button" class="btn"
-                                                                        onclick="placeOrder('<%= user._id %>' , '<%=product[0]._id%>',  true)">Place
-                                                                        order</button>
-                                                                    <%}else{%>
-                                                                        
-                                                                        
-                                                                        <button type="button" class="btn"
-                                                                            onclick="placeOrder('<%= user._id %>', [<% for (let i = 0; i < data.length; i++) { %>'<%= data[i].productDetails[0]._id %>'<% if (i < data.length - 1) { %>,<% } %><% } %>], false)">Place
-                                                                            Order</button>
-
-
-                                                                        <% } %>
-
-                                                            </div>
-                                                        </div>
-                                                        <div class="input-group mb-3 col-2" style="border: 1px solid #ced4da; border-radius: 5px; width: 300px; margin-left: 200px; margin-top: 60px;">
-                                                            <input type="text" class="form-control" id="inputCoupon" placeholder="Paste Coupon Name" >
-                                                            <div class="input-group-append">
-                                                                <button class="btn btn-primary" id="applyButton" type="button" onclick="applyCoupon('<%=totalAmount%>')">Apply</button>
-                                                            </div>
-                                                        </div>
-                                                        
-                    </div>
-
-
-
+                    
                     <div class="col-8">
                         <div class="row align-items-start mt-30 ml-150">
                             <!-- Use align-items-start to vertically align content at the top -->
@@ -369,6 +215,113 @@
 
 
 
+                    <div class="col-6 mt-50 ">
+                        <div class="payment_method">
+                            <div class="mb-25 ml-150">
+                                <h5>Payment</h5>
+                            </div>
+                            <div class="custome-radio ml-150">
+                                <input class="form-check-input payment" type="radio" value="cod" name="payment_option"
+                                    id="CashOnDelivey" checked="">
+                                <label class="form-check-label" for="CashOnDelivey" data-bs-toggle="collapse"
+                                    data-target="#CashOnDelivey" aria-controls="CashOnDelivey">Cash on
+                                    Delivery</label>
+                            </div>
+                            <div class="custome-radio ml-150">
+                                <input class="form-check-input payment" required="" value="wallet" type="radio"
+                                    name="payment_option" id="wallet" checked="">
+                                <label class="form-check-label" for="wallet" data-bs-toggle="collapse"
+                                    data-target="#wallet" aria-controls="paypal">Wallet</label>
+                            </div>
+                            <div class="custome-radio ml-150">
+                                <input class="form-check-input payment" required="" value="online" type="radio"
+                                    name="payment_option" id="Razorpay" checked="">
+                                <label class="form-check-label" for="Razorpay" data-bs-toggle="collapse"
+                                    data-target="#Razorpay" aria-controls="paypal">Razorpay</label>
+                            </div>
+
+                                </div>
+
+                    </div>
+
+
+
+
+
+                    <div class="container col-6 mt-3">
+                      
+                            <% if (isSingle===true) { %>
+                                <% totalAmount +=product[0].salePrice; %>
+                                    <% }else{ %>
+
+                                        <% for (let i=0; i < data.length; i++) { %>
+
+                                            <% totalAmount +=data[i].productDetails[0].salePrice * data[i].quantity %>
+
+
+                                            
+                                                <% } %>
+
+                                                
+                                                    <% } %>
+                                                    
+                                                    <!-- Display total and shipping information outside the loop -->
+                                                    <div class="ml-150">
+                                                            <table class="table mt-45">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <th>Shipping</th>
+                                                                        <td colspan="2"><em>Free Shipping</em></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Discount</th>
+                                                                        <td colspan="2" id="discount">
+                                                                            <% if (locals.offerPrice) { %>
+                                                                                <%= locals.offerPrice %>
+                                                                            <% }else{ %>
+                                                                                 0
+                                                                                <% } %>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <th>Total for All Products</th>
+                                                                        <td colspan="2" class="product-subtotal"
+                                                                        >
+                                                                            <span class="font-xl text-brand fw-900" id="totalValue"><%=
+                                                                                    totalAmount %></span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+
+                                                            <div class="ml-65">
+                                                                <%if(isSingle===true){%>
+                                                                    <button type="button" class="btn"
+                                                                        onclick="placeOrder('<%= user._id %>' , '<%=product[0]._id%>',  true)">Place
+                                                                        order</button>
+                                                                    <%}else{%>
+                                                                        
+                                                                        
+                                                                        <button type="button" class="btn"
+                                                                            onclick="placeOrder('<%= user._id %>', [<% for (let i = 0; i < data.length; i++) { %>'<%= data[i].productDetails[0]._id %>'<% if (i < data.length - 1) { %>,<% } %><% } %>], false)">Place
+                                                                            Order</button>
+
+
+                                                                        <% } %>
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="input-group mb-3 col-2" style="border: 1px solid #ced4da; border-radius: 5px; width: 300px; margin-left: 200px; margin-top: 60px;">
+                                                            <input type="text" class="form-control" id="inputCoupon" placeholder="Paste Coupon Name" >
+                                                            <div class="input-group-append">
+                                                                <button class="btn btn-primary" id="applyButton" type="button" onclick="applyCoupon('<%=totalAmount%>')">Apply</button>
+                                                            </div>
+                                                        </div>
+                                                        
+                    </div>
+
+
+
                 </div>
             </div>
     </section>
@@ -399,7 +352,7 @@
                 });
             } else {
                 $.ajax({
-                    url: 'orderPlaced',
+                    url: '/orderPlaced',
                     method: 'POST',
                     data: {
                         totalPrice: numericValue,

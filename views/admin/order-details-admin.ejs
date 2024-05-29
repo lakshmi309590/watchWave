@@ -38,7 +38,7 @@
                                 <% if (orders.status === "Delivered") { %>
                                     <div class="row">
                                    <div class="col-2 ">
-                                    <a href="/invoice?id=<%= orders._id %>"><button  class="btn btn-primary">Invoice</button></a>
+                                   
                                         </div>
                                         <div class="col-5" style="margin-top: 10px; margin-left: 50px;">
 
@@ -48,7 +48,7 @@
                                         </div>
                                         </div>
                                 <% } else if (orders.status === "Returned") { %>
-                                    <h4 class="text-warning">Returned</h4>
+                                    
                                 <% } else { %>
                                     <select id="actionDropdown" class="form-select form-select-sm d-inline-block mb-lg-0 mb-15 mw-100" onchange="handleDropdownChange(this)">
                                         <option value="status">Status</option>
@@ -269,11 +269,11 @@
         var selectedValue = selectElement.value;
         console.log(selectedValue);
         if(selectedValue == "cancel"){
-            window.location.href = `https://laplux.live/admin/changeStatus?orderId=${orderId.value}&status=${selectedValue}`;
+            window.location.href = `http://localhost:3000/admin/changeStatus?orderId=${orderId.value}&status=${selectedValue}`;
         }else if(selectedValue == "Shipped"){
-            window.location.href = `https://laplux.live/admin/changeStatus?orderId=${orderId.value}&status=${selectedValue}`;
+            window.location.href = `http://localhost:3000/admin/changeStatus?orderId=${orderId.value}&status=${selectedValue}`;
         }else if(selectedValue == "Delivered"){
-            window.location.href = `https://laplux.live/admin/changeStatus?orderId=${orderId.value}&status=${selectedValue}`;
+            window.location.href = `http://localhost:3000/admin/changeStatus?orderId=${orderId.value}&status=${selectedValue}`;
         }else{
             alert("error")
         }

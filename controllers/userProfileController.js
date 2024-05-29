@@ -270,31 +270,49 @@ const securePassword = async (password) => {
 }
 
 const postNewPassword = async (req, res) => {
+    const userId = req.session.user; // Assuming user ID is stored in session
+    const { currentPass, newPass1, newPass2 } = req.body;
+
     try {
-        const { newPass1, newPass2 } = req.body
-        const email = req.session.email
-        if (newPass1 === newPass2) {
-            const passwordHash = await securePassword(newPass1)
-            await User.updateOne(
-                { email: email },
-                {
-                    $set: {
-                        password: passwordHash
-                    }
-                }
-            )
-                .then((data) => console.log(data))
-            res.redirect("/login")
-        } else {
-            console.log("Password not match");
-            res.render("reset-password", { message: "Password not matching" })
+        if (!currentPass || !newPass1 || !newPass2) {
+            return res.status(400).render('user/reset-password', { message: 'All fields are required' });
         }
 
+        if (newPass1 !== newPass2) {
+            return res.status(400).render('user/reset-password', { message: 'New passwords do not match' });
+        }
 
+        // Fetch user from database
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).render('user/reset-password', { message: 'User not found' });
+        }
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPass, user.password);
+        if (!isMatch) {
+            return res.status(400).render('user/reset-password', { message: 'Current password is incorrect' });
+        }
+
+        // Enforce stronger password criteria
+        const strongPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
+        if (!strongPattern.test(newPass1)) {
+            return res.status(400).render('user/reset-password', { message: 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.' });
+        }
+
+        // Hash the new password
+        const hashedNewPassword = await bcrypt.hash(newPass1, 10);
+
+        // Update user's password in the database
+        await User.findByIdAndUpdate(userId, { password: hashedNewPassword });
+
+        // Password changed successfully
+        res.redirect('/profile');
     } catch (error) {
-        console.log(error.message);
+        console.error('Error changing password:', error);
+        res.status(500).render('user/reset-password', { message: 'An error occurred while changing password' });
     }
-}
+};
 const verifyReferalCode = async (req, res) => {
     try {
         const referalCode = req.body.referalCode

@@ -29,7 +29,7 @@ const contact = async (req, res) => {
 
 const shopProduct= async (req, res) => {
     try {
-        res.render('user/shop-product');
+        res.render('user/shop');
     } catch (error) {
         console.log(error.message);
     }
@@ -43,11 +43,24 @@ const about = async (req, res) => {
 }
 const home = async (req, res) => {
     try {
+        const today = new Date().toISOString();
+        const user = req.session.user
+        const userData = await User.findOne({})
+        const productData = await Product.find({isBlocked:false}).sort({id:-1}).limit(4)
         const listedCategories = await Category.find({ isListed: true }).select('name');
         const categoryNames = listedCategories.map(category => category.name);
-        const products = await Product.find({ isBlocked: false })
-        res.render('user/home', { products:products ,categoryNames: categoryNames });
-        console.log(products)
+         // Temporary debugging code
+         const allProducts = await Product.find();
+         allProducts.forEach(product => {
+             console.log(product.id, product.category);
+         });
+ 
+        
+        if(user){
+        res.render('user/home', {user:userData, products:productData ,categoryNames: categoryNames });
+        }else{
+            res.render("user/home",{products:productData,categoryNames: categoryNames})
+        }
     } catch (error) {
         console.log(error);
     }
@@ -313,36 +326,48 @@ const getLogoutUser = async (req, res) => {
         console.log(error.message);
     }
 }
+
+     
 const getProductDetailsPage = async (req, res) => {
     try {
-        const user = req.session.user
-        console.log("wrking");
-        const id = req.query.id
-        console.log(id);
+        const user = req.session.user;
+        const id = req.query.id;
+        console.log(`Fetching details for product ID: ${id}`);
+
         const findProduct = await Product.findOne({ id: id });
-        const findCategory = await Category.findOne({name : findProduct.category})
-        // console.log(findCategory);
-        let totalOffer
-        if(findCategory.categoryOffer || findProduct.productOffer){
-            totalOffer = findCategory.categoryOffer + findProduct.productOffer
+        if (!findProduct) {
+            console.log(`Product not found for ID: ${id}`);
+            return res.status(404).render('error', { message: 'Product not found' });
         }
-        console.log(findProduct.id, "Hello world");
-        if (user) {
-            res.render("user/product-details", { data: findProduct, totalOffer, user: user })
+
+        const findCategory = await Category.findOne({ name: findProduct.category });
+
+        let totalOffer = 0;
+        if (findCategory) {
+            totalOffer = (findCategory.categoryOffer || 0) + (findProduct.productOffer || 0);
         } else {
-            res.render("user/product-details", { data: findProduct, totalOffer })
+            console.log(`Category not found for product ID: ${id}, Category: ${findProduct.category}`);
+        }
+
+        console.log(`Rendering details for product ID: ${id}, Category: ${findProduct.category}, Total Offer: ${totalOffer}`);
+
+        if (user) {
+            res.render('user/product-details', { data: findProduct, totalOffer, user: user });
+        } else {
+            res.render('user/product-details', { data: findProduct, totalOffer });
         }
     } catch (error) {
         console.log(error.message);
+        res.status(500).render('error', { message: 'An error occurred' });
     }
-}
-
+};
 
 
 const getShopPage = async (req, res) => {
     try {
         const user = req.session.id;
         const products = await Product.find({ isBlocked: false });
+        const count = await Product.find({ isBlocked: false }).count()
         const categories = await Category.find({ isListed: true });
 
         let itemsPerPage = 6;
@@ -352,7 +377,7 @@ const getShopPage = async (req, res) => {
         let totalPages = Math.ceil(products.length / 6);
         const currentProduct = products.slice(startIndex, endIndex);
 
-        res.render("shop", {
+        res.render("user/shop", {
             user: user,
             product: currentProduct,
             category: categories,
@@ -390,7 +415,7 @@ const searchProducts = async (req, res) => {
         const currentProduct = searchResult.slice(startIndex, endIndex)
 
 
-        res.render("shop",
+        res.render("user/shop",
             {
                 user: user,
                 product: currentProduct,
@@ -431,7 +456,7 @@ const filterProduct = async (req, res) => {
         let totalPages = Math.ceil(findProducts.length / 6);
         const currentProduct = findProducts.slice(startIndex, endIndex);
 
-        res.render("shop", {
+        res.render("user/shop", {
             user: user,
             product: currentProduct,
             category: categories,
@@ -469,7 +494,7 @@ const filterByPrice = async (req, res) => {
         const currentProduct = findProducts.slice(startIndex, endIndex);
 
 
-        res.render("shop", {
+        res.render("user/shop", {
             user: user,
             product: currentProduct,
             category: categories,

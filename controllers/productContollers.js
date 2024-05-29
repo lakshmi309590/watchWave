@@ -21,7 +21,7 @@ const addProducts = async (req, res) => {
         console.log("working newwww");
 
         const products = req.body
-        console.log(products);
+        
         const productExists = await Product.findOne({ productName: products.productName })
         if (!productExists) {
             const images = []
