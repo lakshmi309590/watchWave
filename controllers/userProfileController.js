@@ -23,6 +23,8 @@ const editUserDetails = async(req,res)=>{
     try{
         const userId = req.query.id 
         const data =req.body
+        
+        console.log(`Updating user: ${userId} with data: ${JSON.stringify(data)}`);
         await User.updateOne(
             {_id: userId},
             {
@@ -34,12 +36,11 @@ const editUserDetails = async(req,res)=>{
             }
         )
         .then((data)=>console.log(data))
-        res.redirect("user/profile")
+        res.redirect("profile")
     }catch(error){
         console.log(error.message)
     }
 }
-
 
 const getAddressAddPage= async(req,res)=>{
     try{
@@ -50,10 +51,9 @@ const getAddressAddPage= async(req,res)=>{
     }
 }
 
-
+        
 const postAddress = async(req,res)=>{
     try{
-        const user = req.session.user
         console.log(user);
         const userData =await User.findOne({_id: user})
         const{

@@ -62,53 +62,148 @@ const getCheckoutPage = async (req, res) => {
 const orderPlaced = async (req, res) => {
     try {
         console.log("req.body================>", req.body);
-        const userId = req.session.user;
-        const findUser = await User.findOne({ _id: userId });
+        if (req.body.isSingle === "true") {
+            const { totalPrice, addressId, payment, productId } = req.body
+            const userId = req.session.user
+            console.log(req.session.grandTotal,"from session");
+            const grandTotal = req.session.grandTotal
+            // console.log(req.body)
+            // console.log(totalPrice, addressId, payment, productId);
+            const findUser = await User.findOne({ _id: userId })
+            // console.log("Find user ===>", findUser);
+            const address = await Address.findOne({ userId: userId })
+            // console.log(address);
+            // const findAddress = address.find(item => item._id.toString() === addressId);
+            const findAddress = address.address.find(item => item._id.toString() === addressId);
+            console.log(findAddress);
+            // console.log("Before product search")
+            const findProduct = await Product.findOne({ _id: productId })
+            // console.log(findProduct);
 
-        if (!findUser.cart.length) {
-            console.log('Cart is empty');
-            return res.json({ success: false, message: "Cart is empty" });
+            const productDetails = {
+                _id: findProduct._id,
+                price: findProduct.salePrice,
+                name: findProduct.productName,
+                image: findProduct.productImage[0],
+                quantity: 1
+            }
+            // console.log("Before order placed")
+            const newOrder = new Order(({
+                product: productDetails,
+                totalPrice: grandTotal,
+                address: findAddress,
+                payment: payment,
+                userId: userId,
+                createdOn: Date.now(),
+                status: "Confirmed",
+            }))
+
+          
+            console.log("Order placed")
+            findProduct.quantity = findProduct.quantity - 1
+
+            
+
+
+            let orderDone; 
+
+            if (newOrder.payment == 'cod') {
+                console.log('Order Placed with COD');
+                await findProduct.save()
+                orderDone = await newOrder.save();
+                res.json({ payment: true, method: "cod", order: orderDone, quantity: 1, orderId: userId });
+            }
+
+        } else {
+
+            console.log("from cart");
+
+            const { totalPrice, addressId, payment } = req.body
+            // console.log(totalPrice, addressId, payment);
+            const userId = req.session.user
+            const findUser = await User.findOne({ _id: userId })
+            const productIds = findUser.cart.map(item => item.productId)
+            const grandTotal = req.session.grandTotal
+            console.log(grandTotal, "grandTotal");
+            //  const addres= await Address.find({userId:userId})
+
+            const findAddress = await Address.findOne({ 'address._id': addressId });
+
+            if (findAddress) {
+                const desiredAddress = findAddress.address.find(item => item._id.toString() === addressId.toString());
+                // console.log(desiredAddress);
+
+
+                const findProducts = await Product.find({ _id: { $in: productIds } })
+
+
+                const cartItemQuantities = findUser.cart.map((item) => ({
+                    productId: item.productId,
+                    quantity: item.quantity
+                }))
+
+                const orderedProducts = findProducts.map((item) => ({
+                    _id: item._id,
+                    price: item.salePrice,
+                    name: item.productName,
+
+                    image: item.productImage[0],
+                    quantity: cartItemQuantities.find(cartItem => cartItem.productId.toString() === item._id.toString()).quantity
+                }))
+
+
+
+
+                const newOrder = new Order({
+                    product: orderedProducts,
+                    totalPrice: grandTotal,
+                    address: desiredAddress,
+                    payment: payment,
+                    userId: userId,
+                    status: "Confirmed",
+                    createdOn: Date.now()
+
+                })
+                
+
+                await User.updateOne(
+                    { _id: userId },
+                    { $set: { cart: [] } }
+                );
+
+
+                // console.log('thsi is new order',newOrder);
+
+                for (let i = 0; i < orderedProducts.length; i++) {
+
+                    const product = await Product.findOne({ _id: orderedProducts[i]._id });
+                    if (product) {
+                        const newQuantity = product.quantity - orderedProducts[i].quantity;
+                        product.quantity = Math.max(newQuantity, 0);
+                        await product.save();
+                    }
+                }
+                
+                let orderDone
+                if (newOrder.payment == 'cod') {
+                    console.log('order placed by cod');
+                    orderDone = await newOrder.save();
+                    res.json({ payment: true, method: "cod", order: orderDone, quantity: cartItemQuantities, orderId: findUser });
+                } 
+                       
+                     
+                  
+
+            } else {
+                console.log('Address not found');
+            }
         }
-
-        const { totalPrice, addressId, payment, productId } = req.body;
-        const address = await Address.findOne({ userId: userId });
-        const findAddress = address.address.find(item => item._id.toString() === addressId);
-        const findProduct = await Product.findOne({ _id: productId });
-
-        const productDetails = {
-            _id: findProduct._id,
-            price: findProduct.salePrice,
-            name: findProduct.productName,
-            image: findProduct.productImage[0],
-            quantity: 1
-        };
-
-        const newOrder = new Order({
-            product: productDetails,
-            totalPrice: totalPrice,
-            address: findAddress,
-            payment: payment,
-            userId: userId,
-            createdOn: Date.now(),
-            status: "Confirmed",
-        });
-
-        findProduct.quantity -= 1;
-        await findProduct.save();
-        await newOrder.save();
-
-        // Clear the cart after placing the order
-        await User.updateOne({ _id: userId }, { $set: { cart: [] } });
-        console.log('Order placed and cart cleared');
-        
-        // Respond with success message and redirect URL
-        res.json({ success: true, message: "Order placed successfully!", redirect: "/cart" });
-
     } catch (error) {
-        console.log("Error placing order:", error.message);
-        res.json({ success: false, message: "Internal Server Error" });
+        console.log(error.message);
     }
-};
+}
+
+
 
 const getOrderDetailsPage = async (req, res) => {
     try {
@@ -142,7 +237,6 @@ const getOrderListPageAdmin = async (req, res) => {
 
 const cancelOrder = async (req, res) => {
     try {
-        console.log("im here");
         const userId = req.session.user;
         const findUser = await User.findOne({ _id: userId });
 
@@ -151,33 +245,33 @@ const cancelOrder = async (req, res) => {
         }
 
         const orderId = req.query.orderId;
+        const order = await Order.findOne({ _id: orderId });
 
-        await Order.updateOne({ _id: orderId },
-            { status: "Canceled" }
-        ).then((data) => console.log(data));
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
 
-        const findOrder = await Order.findOne({ _id: orderId });
+        // Update order status to "Canceled"
+        order.status = "Canceled";
+        await order.save();
 
-        if (findOrder.payment === "wallet" || findOrder.payment === "online") {
-            findUser.wallet += findOrder.totalPrice;
-
-            const newHistory = {
-                amount: findOrder.totalPrice,
+        // Refund to wallet if applicable
+        if (order.payment === "wallet" || order.payment === "online") {
+            findUser.wallet += order.totalPrice;
+            findUser.history.push({
+                amount: order.totalPrice,
                 status: "credit",
                 date: Date.now()
-            };
-            findUser.history.push(newHistory);
+            });
             await findUser.save();
         }
 
-        for (const productData of findOrder.product) {
-            const productId = productData.ProductId;
+        // Update product quantities
+        for (const productData of order.product) {
+            const productId = productData._id; // Corrected from productData.ProductId to productData._id
             const quantity = productData.quantity;
 
             const product = await Product.findById(productId);
-
-            console.log(product, "=>>>>>>>>>");
-
             if (product) {
                 product.quantity += quantity;
                 await product.save();
@@ -185,11 +279,12 @@ const cancelOrder = async (req, res) => {
         }
 
         res.redirect('/profile');
-
     } catch (error) {
         console.log(error.message);
+        res.status(500).json({ message: 'An error occurred while cancelling the order' });
     }
 };
+
 
 const changeOrderStatus = async (req, res) => {
     try {

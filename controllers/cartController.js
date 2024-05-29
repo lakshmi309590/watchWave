@@ -126,6 +126,77 @@ const addToCart = async (req, res) => {
     }
 }
 
+const changeQuantity = async (req, res) => {
+    try {
+        // console.log('herere--------');
+        const id = req.body.productId
+        const user = req.session.user
+        const count = req.body.count
+
+        // console.log(user);
+        // console.log(id, "productId");
+
+        const findUser = await User.findOne({ _id: user })
+        // console.log(findUser);
+        const findProduct = await Product.findOne({ _id: id })
+
+
+        if (findUser) {
+
+            // console.log('iam here--');
+            const productExistinCart = findUser.cart.find(item => item.productId === id)
+            // console.log(productExistinCart, 'this is product in cart');
+            let newQuantity
+            if (productExistinCart) {
+                // console.log('iam in the carrt----------------------mm');
+                console.log(count);
+                if (count == 1) {
+                    // console.log("count + 1");
+                    newQuantity = productExistinCart.quantity + 1
+                } else if (count == -1) {
+                    // console.log("count - 1");
+                    newQuantity = productExistinCart.quantity - 1
+                } else {
+                    // console.log("errrrrrrrr");
+                    return res.status(400).json({ status: false, error: "Invalid count" })
+                }
+            } else {
+                // console.log('hhihihihihihi../');
+            }
+            // console.log('hiiiiiiiiiiiiiiiiiiii',newQuantity);
+            console.log(newQuantity, 'this id new Quantity');
+            if (newQuantity > 0 && newQuantity <= findProduct.quantity) {
+                let quantityUpdated = await User.updateOne(
+                    { _id: user, "cart.productId": id },
+                    {
+                        $set: {
+                            "cart.$.quantity": newQuantity
+                        }
+                    }
+                )
+                const totalAmount = findProduct.salePrice
+
+
+                // console.log(totalAmount,"totsll");
+                if (quantityUpdated) {
+                    // console.log('iam here inside the cart', quantityUpdated, 'ok');
+
+                    res.json({ status: true, quantityInput: newQuantity,count:count, totalAmount: totalAmount })
+                } else {
+                    res.json({ status: false, error: 'cart quantity is less' });
+
+                }
+            } else {
+                res.json({ status: false, error: 'out of stock' });
+            }
+        }
+
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ status: false, error: "Server error" });
+    }
+}
+
 
  
 const deleteProduct = async (req, res) => {

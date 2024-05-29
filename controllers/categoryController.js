@@ -10,31 +10,30 @@ const getCategoryInfo =async(req,res)=>{
     }
 }
 
-const addCategory =async(req,res)=>{
-    try{
-        const {name,description}=req.body
+const addCategory = async (req, res) => {
+    try {
+        const { name, description } = req.body
         const categoryExists = await Category.findOne({ name })
-        if(description){
-            if(!categoryExists){
-                const newCategory= new Category({
-                    name:name,
-                    description:description
+        if (description) {
+            if (!categoryExists) {
+                const newCategory = new Category({
+                    name: name,
+                    description: description
                 })
                 await newCategory.save()
                 console.log("New Category : ", newCategory);
                 res.redirect("/admin/allCategory")
-            }else {
+            } else {
                 res.redirect("/admin/category")
                 console.log("Category Already exists");
             }
-        }else {
+        } else {
             console.log("description required");
         }
     } catch (error) {
         console.log(error.message);
     }
 }
-
 const getAllCategories = async (req, res) => {
     try {
         const categoryData = await Category.find({})
@@ -77,25 +76,51 @@ const getEditCategory = async (req, res) => {
 }
 const editCategory = async (req, res) => {
     try {
-        const id = req.params.id
-        const { categoryName, description } = req.body
-        const findCategory = await Category.find({ _id: id })
+        const id = req.params.id;
+        const { categoryName, description } = req.body;
+
+        if (!categoryName || !description) {
+            console.log("Category name and description are required");
+            return res.redirect(`/admin/category?id=${id}`);
+        }
+
+        // Check if another category with the same name exists
+        const categoryExists = await Category.findOne({ name: categoryName });
+        if (categoryExists && categoryExists._id.toString() !== id) {
+            console.log("Category name already exists");
+            return res.redirect(`/admin/category?id=${id}`);
+        }
+
+        // Find the category by ID
+        const findCategory = await Category.findById(id);
         if (findCategory) {
+            // Update the category
             await Category.updateOne(
                 { _id: id },
                 {
                     name: categoryName,
                     description: description
-                })
-            res.redirect("/admin/category")
+                }
+            );
+
+            // Update the category reference in the products
+            await Product.updateMany(
+                { category: id },
+                { $set: { category: id } }
+            );
+
+            res.redirect("/admin/category");
         } else {
             console.log("Category not found");
+            res.redirect("/admin/category");
         }
-
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
+        res.status(500).send("Internal Server Error");
     }
-}
+};
+
+
 
 
 
