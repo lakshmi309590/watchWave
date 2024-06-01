@@ -1,7 +1,7 @@
 <%- include("../partial/userHeader") %>
 <div class="container mt-4">
     <h3 class="mt-3" style="color: #046963; margin-bottom:70px">Create User Address</h3>
-    <form id="addressForm" method="POST" action="/addAddress" class="border-0 p-3">
+    <form id="addressForm" class="border-0 p-3">
         <div class="row mb-50">
             <div class="form-group col-md-4">
                 <label for="addressType">Address Type:</label>
@@ -57,85 +57,131 @@
     </form>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.getElementById('addressForm').addEventListener('submit', function(event) {
-        if (!validateForm()) {
-            event.preventDefault();
+        event.preventDefault(); // Prevent default form submission
+        if (validateForm()) {
+            submitForm();
         }
     });
 
     function validateForm() {
-        let isValid = true;
         const requiredFields = ["addressType", "name", "city", "landMark", "state", "pincode", "phone", "altPhone"];
+        let isValid = true;
 
-        // Clear all error messages
+        // Clear all previous error messages
         document.querySelectorAll('.error-message').forEach(function(span) {
             span.textContent = '';
         });
 
+        // Validate required fields
         requiredFields.forEach(function(field) {
             const input = document.getElementById(field);
             if (input.value.trim() === "") {
-                const errorSpan = document.getElementById('error-' + field);
-                errorSpan.textContent = 'This field is required.';
+                displayError(input, 'This field is required.');
                 isValid = false;
             }
         });
 
-        const pincode = document.getElementById('pincode').value;
+        // Validate pincode format
         const pincodePattern = /^[1-9][0-9]{5}$/;
-
+        const pincode = document.getElementById('pincode').value;
         if (!pincodePattern.test(pincode)) {
-            const errorSpan = document.getElementById('error-pincode');
-            errorSpan.textContent = 'Pincode must be exactly 6 digits long and cannot start with 0.';
+            displayError(document.getElementById('pincode'), 'Pincode must be exactly 6 digits long and cannot start with 0.');
             isValid = false;
         }
 
+        // Validate phone and alternate phone numbers format
         const phonePattern = /^[1-9][0-9]{9}$/;
-        
         const phone = document.getElementById('phone').value;
         if (!phonePattern.test(phone)) {
-            const errorSpan = document.getElementById('error-phone');
-            errorSpan.textContent = 'Phone number must be exactly 10 digits long and cannot start with 0.';
+            displayError(document.getElementById('phone'), 'Phone number must be exactly 10 digits long and cannot start with 0.');
             isValid = false;
         }
 
         const altPhone = document.getElementById('altPhone').value;
         if (!phonePattern.test(altPhone)) {
-            const errorSpan = document.getElementById('error-altPhone');
-            errorSpan.textContent = 'Alternate phone number must be exactly 10 digits long and cannot start with 0.';
+            displayError(document.getElementById('altPhone'), 'Alternate phone number must be exactly 10 digits long and cannot start with 0.');
             isValid = false;
         }
 
+        // Validate name, city, and landmark fields to contain alphabetic characters
+        const alphabeticPattern = /[a-zA-Z]/;
         const name = document.getElementById('name').value;
-        if (!containsCharacterOrNumber(name)) {
-            const errorSpan = document.getElementById('error-name');
-            errorSpan.textContent = 'Name should contain alphabetic characters.';
+        if (!alphabeticPattern.test(name)) {
+            displayError(document.getElementById('name'), 'Name should contain alphabetic characters.');
             isValid = false;
         }
 
         const city = document.getElementById('city').value;
-        if (!containsCharacterOrNumber(city)) {
-            const errorSpan = document.getElementById('error-city');
-            errorSpan.textContent = 'City should contain alphabetic characters.';
+        if (!alphabeticPattern.test(city)) {
+            displayError(document.getElementById('city'), 'City should contain alphabetic characters.');
             isValid = false;
         }
 
         const landMark = document.getElementById('landMark').value;
-        if (!containsCharacterOrNumber(landMark)) {
-            const errorSpan = document.getElementById('error-landMark');
-            errorSpan.textContent = 'Landmark should contain alphabetic characters.';
+        if (!alphabeticPattern.test(landMark)) {
+            displayError(document.getElementById('landMark'), 'Landmark should contain alphabetic characters.');
             isValid = false;
         }
 
         return isValid;
     }
 
-    function containsCharacterOrNumber(input) {
-        const pattern = /[a-zA-Z]/;
-        return pattern.test(input);
+    function displayError(input, message) {
+        const errorSpan = document.getElementById('error-' + input.id);
+        errorSpan.textContent = message;
+    }
+
+    function submitForm() {
+        const formData = {
+            addressType: document.getElementById('addressType').value,
+            name: document.getElementById('name').value,
+            city: document.getElementById('city').value,
+            landMark: document.getElementById('landMark').value,
+            state: document.getElementById('state').value,
+            pincode: document.getElementById('pincode').value,
+            phone: document.getElementById('phone').value,
+            altPhone: document.getElementById('altPhone').value
+        };
+
+        fetch('/addAddress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '/profile'; // Redirect to the profile page
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+        });
     }
 </script>
-
-
 <%- include("../partial/footer") %>

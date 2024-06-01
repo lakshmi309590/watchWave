@@ -90,17 +90,22 @@
                                                 <h5 class="mb-0">User Profile</h5>
                                             </div>
                                             <div class="card-body text-center">
-                                                <img class="svgInject" alt="Evara" src="/assets/imgs/theme/icons/user-profile.svg"
-                                                    class="card-img-top rounded-circle mx-auto mt-3" alt="Profile Image" style="width: 100px; height: 100px; object-fit: cover;">
-                                                    
+                                              
+                                                    <!-- Default profile image -->
+                                                    <img src="/assets/imgs/theme/icons/user-profile.svg"
+                                                        class="card-img-top rounded-circle mx-auto mt-3" alt="Profile Image"
+                                                        style="width: 100px; height: 100px; object-fit: cover;">
+                                           
                                                 <div class="card-body text-center">
                                                     <h5 class="card-title">
-                                                        <%= user.name %>
+                                                        <%= user.Name %>
                                                     </h5>
                                                     <p class="card-text"><strong>Email:</strong>
                                                         <%= user.email %>
                                                     </p>
-                                                  
+                                                    <p class="card-text"><strong>Phone:</strong>
+                                                        <%= user.phone %>
+                                                    </p>
                                                     <p class="card-text"><strong>Account Id:</strong>
                                                         <%= user._id %>
                                                     </p>
@@ -108,6 +113,8 @@
                                             </div>
                                         </div>
                                     </div>
+
+
 
                                     <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
                                         <div class="card">
@@ -358,25 +365,26 @@
                                             </div>
                                             <div class="card-body">
 
-                                                <form method="post" action="/editUserDetails?id=<%= user._id %>">
-                                                    <div class="row">
-                                                        <div class="form-group col-md-6">
-                                                            <label> Name <span class="required">*</span></label>
-                                                            <input required="" value="<%= user.name %>"
-                                                                class="form-control square" name="name" type="text">
-                                                        </div>
+<form method="post" action="/editUserDetails?id=<%= user._id %>">
+    <div class="row">
+        <div class="form-group col-md-6">
+            <label> Name <span class="required">*</span></label>
+            <input required="" value="<%= user.Name %>"
+                class="form-control square" name="Name" type="text">
+        </div>
 
-                                                        <div class="form-group col-md-12">
-                                                            <label>Mobile Number <span class="required">*</span></label>
-                                                            <input required="" value="<%= user.phone %>"
-                                                                class="form-control square" name="phone" type="text">
-                                                        </div>
-                                                        <div class="col-md-12 mt-15">
-                                                            <button type="submit" class="btn btn-fill-out submit"
-                                                                name="submit" value="Submit">Save</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
+        <div class="form-group col-md-12">
+            <label>Mobile Number <span class="required">*</span></label>
+            <input required="" value="<%= user.phone %>"
+                class="form-control square" name="phone" type="text">
+        </div>
+        <div class="col-md-12 mt-15">
+            <button type="submit" class="btn btn-fill-out submit"
+                name="submit" value="Submit">Save</button>
+        </div>
+    </div>
+</form>
+</div>
                                             </div>
                                         </div>
                                     </div>
@@ -519,6 +527,76 @@
 
         </script>
 
+        <script>
+    document.querySelector('form[action="/editUserDetails?id=<%= user._id %>"]').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+        });
+        if (response.ok) {
+            location.reload(); // Reload the page to reflect updated user details
+        } else {
+            alert('Failed to update user details. Please try again.');
+        }
+    });
+</script>
 
+<script>
+    document.getElementById('userDetailsForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Get form data
+        const formData = new FormData(this);
+
+        // Validate name field
+        const nameInput = formData.get('Name');
+        if (nameInput === '') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please provide a valid name.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Make AJAX request
+        fetch('/editUserDetails?id=<%= user._id %>', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '/profile';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+        });
+    });
+</script>
 
         <%- include("../partial/footer") %>

@@ -19,28 +19,40 @@ const getUserProfile = async(req,res)=>{
     }
 }
 
-const editUserDetails = async(req,res)=>{
-    try{
-        const userId = req.query.id 
-        const data =req.body
+
+const editUserDetails = async (req, res) => {
+    try {
+        const userId = req.query.id;
+        const data = req.body;
+        console.log(data,"hjkuiuiuuiuiuii")
+        // Validate name field
+        if (!data.Name ) {
+            return res.status(400).json({ success: false, message: "Please provide a valid name." });
+        }
+
         
-        console.log(`Updating user: ${userId} with data: ${JSON.stringify(data)}`);
+
         await User.updateOne(
-            {_id: userId},
+            { _id: userId },
             {
-                $set:{
-                    name:data.name,
-                    phone:data.phone,
-                    
+                $set: {
+                    Name: data.Name,
+                    phone: data.phone,
+                  
+                    // email: data.email,
                 }
             }
-        )
-        .then((data)=>console.log(data))
-        res.redirect("profile")
-    }catch(error){
-        console.log(error.message)
+        );
+
+        res.status(200).json({ success: true, message: "User details updated." });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ success: false, message: "An error occurred while updating user details." });
     }
-}
+};
+
+
+
 
 const getAddressAddPage= async(req,res)=>{
     try{
@@ -52,11 +64,12 @@ const getAddressAddPage= async(req,res)=>{
 }
 
         
-const postAddress = async(req,res)=>{
-    try{
+const postAddress = async (req, res) => {
+    try {
+        const user = req.session.user;
         console.log(user);
-        const userData =await User.findOne({_id: user})
-        const{
+        const userData = await User.findOne({ _id: user });
+        const {
             addressType,
             name,
             city,
@@ -64,14 +77,18 @@ const postAddress = async(req,res)=>{
             state,
             pincode,
             phone,
-            altPhone
-        }= req.body;
-        const userAddress =await Address.findOne({userId: userData._id})
+            altPhone,
+        } = req.body;
+
+        const userAddress = await Address.findOne({ userId: userData._id });
         console.log(userAddress);
-        if(!userAddress){
-            const newAddress =new Address({
-                userId:userData._id,
-                address:[
+
+        if (!userAddress) {
+            console.log("fst");
+            console.log(userData._id);
+            const newAddress = new Address({
+                userId: userData._id,
+                address: [
                     {
                         addressType,
                         name,
@@ -81,11 +98,12 @@ const postAddress = async(req,res)=>{
                         pincode,
                         phone,
                         altPhone,
-                    }
-                ]
-            })
-            await newAddress.save()
-        }else{
+                    },
+                ],
+            });
+            await newAddress.save();
+        } else {
+            console.log("scnd");
             userAddress.address.push({
                 addressType,
                 name,
@@ -95,15 +113,19 @@ const postAddress = async(req,res)=>{
                 pincode,
                 phone,
                 altPhone,
-            })
-            await userAddress.save()
+            });
+            await userAddress.save();
         }
-        res.redirect("profile")
-    }
-    catch (error) {
+
+        // Send JSON response for success
+        res.json({ success: true, message: "Address added successfully." });
+
+    } catch (error) {
         console.log(error.message);
-}
-}
+        // Send JSON response for error
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
 
 const getEditAddress = async(req,res)=>{
     try{

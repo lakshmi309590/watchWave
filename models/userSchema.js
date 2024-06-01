@@ -15,6 +15,11 @@ const UserSchema =new Schema({
         type:String,
         require:true
     },
+    phone:{ 
+        type: String,
+         require: true
+     },
+
     Status:{
         type:String,
         default:'Active'

@@ -64,7 +64,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3">
-                        <form method="post" action="/admin/addCategory">
+                        <form method="post" id="addCategoryForm" action="/admin/addCategory">
                             <div class="mb-4">
                                 <label for="product_name" class="form-label">Name</label>
                                 <input type="text" name="name" placeholder="Type here" class="form-control"
@@ -91,8 +91,7 @@
                                         </th>
                                         <th>Name</th>
                                         <th>Description</th>
-                                        <th>Offer Price</th>
-                                        <th>Offer</th>
+                                       
                                         <th>Status</th>
                                         <th>List/Unlist</th>
                                         <th class="text-start">Edit</th>
@@ -110,27 +109,8 @@
                                             <td class="text-start">
                                                 <%= cat[i].description %>
                                             </td>
-                                            <td>
-                                                <% if (locals.cat[i].categoryOffer) { %>
-                                                    <%= cat[i].categoryOffer %>%
-                                                        <% }else{ %>
-                                                            0%
-                                                            <% } %>
-                                            </td>
-                                            <td class="text-start">
-                                                <% if (locals.cat[i].categoryOffer===0) { %>
-                                                    <button class="btn btn-info" onclick="addOffer('<%= cat[i]._id %>')"
-                                                        style="width: 100px;">
-                                                        <a href="#" class="text-white">Add Offer</a>
-                                                    </button>
-                                                    <% }else{ %>
-                                                        <button class="btn btn-info"
-                                                            onclick="removeOffer('<%= cat[i]._id %>')"
-                                                            style="width: 100px;">
-                                                            <a href="#" class="text-white">Remove</a>
-                                                        </button>
-                                                        <% } %>
-                                            </td>
+                                           
+                                          
                                             <td class="text-start">
                                                 <% if (cat[i].isListed===true) { %>
                                                     <span class="badge rounded-pill alert-success"
@@ -176,8 +156,69 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
     <script>
+  document.getElementById('addCategoryForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
 
+    const name = document.querySelector('input[name="name"]').value.trim();
+    const description = document.querySelector('textarea[name="description"]').value.trim();
 
+    if (name.length === 0 || description.length === 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Name and description cannot be empty or whitespace.',
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/addCategory', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, description })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: result.message,
+            }).then(() => {
+                // Optionally clear the form fields
+                document.getElementById('addCategoryForm').reset();
+                // Optionally reload or update the category list dynamically
+                // loadCategories(); // A function to load/update the category list
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: result.message,
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while adding the category.',
+        });
+    }
+});
+function validateForm() {
+    const name = document.querySelector('input[name="name"]').value.trim();
+    const description = document.querySelector('textarea[name="description"]').value.trim();
+
+    if (name.length === 0 || description.length === 0) {
+        alert("Name and description cannot be empty or whitespace.");
+        return false;
+    }
+
+    return true;
+}
         async function addOffer(categoryId) {
             // alert("here")
             const { value: amount } = await Swal.fire({

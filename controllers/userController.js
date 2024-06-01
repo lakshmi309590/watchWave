@@ -111,7 +111,7 @@ function generateOtp() {
 const signUpUser = async (req, res) => {
     console.log(req.body);
     try {
-        const { email,Name } = req.body;
+        const { email,Name,phone } = req.body;
         const findUser = await User.findOne({ email });
         if (req.body.password === req.body.cPassword) {
             if (!findUser) {
@@ -433,44 +433,58 @@ const searchProducts = async (req, res) => {
 const filterProduct = async (req, res) => {
     try {
         const user = req.session.user;
-        const category = req.query.category;
-        const findCategory = category ? await Category.findOne({ _id: category }) : null;
-      
+        const categoryId = req.query.category;
+
+        console.log('User:', user);
+        console.log('categoryId:', categoryId);
+
+        const findCategory = categoryId ? await Category.findById(categoryId) : null;
+
+        console.log('findCategory:', findCategory);
 
         const query = {
             isBlocked: false,
         };
 
         if (findCategory) {
-            query.category = findCategory.name;
+            query.category = findCategory._id; // Use the ObjectId directly
         }
 
-      
-        const findProducts = await Product.find(query);
+        console.log('query:', query);
+
+        // Ensure products exist with the specified category ID
+        const findProducts = await Product.find(query).populate('category');
+        console.log('findProducts:', findProducts);
+
         const categories = await Category.find({ isListed: true });
+        console.log('categories:', categories);
 
         let itemsPerPage = 6;
         let currentPage = parseInt(req.query.page) || 1;
         let startIndex = (currentPage - 1) * itemsPerPage;
         let endIndex = startIndex + itemsPerPage;
-        let totalPages = Math.ceil(findProducts.length / 6);
+        let totalPages = Math.ceil(findProducts.length / itemsPerPage);
         const currentProduct = findProducts.slice(startIndex, endIndex);
 
-        res.render("user/shop", {
+        console.log('currentPage:', currentPage);
+        console.log('totalPages:', totalPages);
+        console.log('currentProduct:', currentProduct);
+
+        res.render('user/shop', {
             user: user,
             product: currentProduct,
             category: categories,
             totalPages,
             currentPage,
-            selectedCategory: category || null,
-            
+            selectedCategory: categoryId || null,
         });
 
     } catch (error) {
-        console.log(error.message);
-        res.status(500).send("Internal Server Error");
+        console.log('Error:', error.message);
+        res.status(500).send('Internal Server Error');
     }
 };
+
 
 
 const filterByPrice = async (req, res) => {

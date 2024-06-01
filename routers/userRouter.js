@@ -8,6 +8,9 @@ const { isLogged } = require("../Authentication/auth")
 const orderController = require("../controllers/orderController")
 
 const productController = require("../controllers/productContollers")
+const multer = require("multer")
+const storage = require("../helpers/multer")
+const upload = multer({ storage: storage })
 // Router.get("/pageNotFound", userController.pageNotFound);
 
 // User action
@@ -39,7 +42,7 @@ Router.post("/addAddress", isLogged, userProfileController.postAddress)
 Router.get("/editAddress", isLogged, userProfileController.getEditAddress),
 Router.post("/editAddress", isLogged, userProfileController.postEditAddress)
 Router.get("/deleteAddress", isLogged, userProfileController.getDeleteAddress)
-Router.post("/editUserDetails", isLogged, userProfileController.editUserDetails)
+Router.post("/editUserDetails", isLogged,upload.none(), userProfileController.editUserDetails)
 Router.post("/verifyReferalCode", isLogged, userProfileController.verifyReferalCode)
 
 // Products based routes
