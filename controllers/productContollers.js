@@ -143,11 +143,11 @@ const editProduct = async (req, res) => {
 const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
-        const page = req.query.page || 1;
+        const page = parseInt(req.query.page) || 1;
         const limit = 4;
 
-        let query = { isBlocked: false };
-        
+        let query = {}; // Start with an empty query
+
         if (req.query.category) {
             const category = await Category.findOne({ name: req.query.category });
             if (category) {
@@ -157,28 +157,34 @@ const getAllProducts = async (req, res) => {
             }
         }
 
-        const productData = await Product.find({
-            ...query,
-            $or: [
-                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
-                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
-            ]
-        })
-        .sort({ createdOn: -1 })
-        .limit(limit * 1)
-        .skip((page - 1) * limit)
-        .exec();
+        // Simplify query to test product fetching
+        const productData = await Product.find(query)
+            .populate('category', 'name')
+            .sort({ createdOn: -1 })
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .exec();
 
-        const count = await Product.find({
+        // Add search conditions back
+        const searchQuery = {
             ...query,
             $or: [
                 { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
                 { brand: { $regex: new RegExp(".*" + search + ".*", "i") } }
             ]
-        }).countDocuments();
+        };
+
+        const productDataWithSearch = await Product.find(searchQuery)
+            .populate('category', 'name')
+            .sort({ createdOn: -1 })
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .exec();
+
+        const count = await Product.find(searchQuery).countDocuments();
 
         res.render("admin/product", {
-            data: productData,
+            data: productDataWithSearch,
             currentPage: page,
             totalPages: Math.ceil(count / limit)
         });

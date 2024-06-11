@@ -19,14 +19,15 @@ const addCategory = async (req, res) => {
             return res.status(400).json({ success: false, message: "Name and description cannot be empty or whitespace." });
         }
 
-        const trimmedName = name.trim();
+        const trimmedName = name.trim().toLowerCase(); // Convert to lowercase
         const trimmedDescription = description.trim();
 
-        const categoryExists = await Category.findOne({ name: trimmedName });
+        // Use a case-insensitive regular expression to find existing category
+        const categoryExists = await Category.findOne({ name: new RegExp(`^${trimmedName}$`, 'i') });
 
         if (!categoryExists) {
             const newCategory = new Category({
-                name: trimmedName,
+                name: trimmedName, // Store the name in lowercase
                 description: trimmedDescription
             });
             await newCategory.save();
@@ -39,6 +40,7 @@ const addCategory = async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error." });
     }
 };
+
 
 const getAllCategories = async (req, res) => {
     try {

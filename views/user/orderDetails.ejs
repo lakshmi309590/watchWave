@@ -121,53 +121,75 @@
                                     <tr class="text-center">
                                         <th width="30%">Product</th>
                                         <th width="20%">Name</th>
+                                        <th width="10%">Cancel</th>
                                         <th width="20%">Unit Price</th>
+                                        <th width="10%">Sale Price</th>
                                         <th width="10%">Quantity</th>
                                         <th class="text-center" width="10%">Amount</th>
-                                        <th width="20%">Discount</th>
-                                        <th class="text-center" width="20%" class="text-end">Total</th>
-                                    </tr>
+                                        
                                 </thead>
                                 <tbody>
-                                    <% if (locals.orders) { %>
+                                    <% if (orders && orders.product.length > 0) { %>
                                         <% let totalProductPrice = 0; %>
                                         <% for (let i = 0; i < orders.product.length; i++) { %>
+                                            <% const product = orders.product[i]; %>
+                                            <% if (!product || !product._id) { continue; } %>
                                             <tr>
                                                 <td class="text-center">
-                                                    <a class="itemside" href="#">
-                                                        <div class="left">
-                                                            <img src="/uploads/product-images/<%= orders.product[i].image %>"
-                                                                style="height: 7rem; width: 7rem;" class="img-xs" alt="Item">
-                                                        </div>
-                                                    </a>
+                                                    <img src="/uploads/product-images/<%= product.image %>" style="height: 7rem; width: 7rem;" class="img-fluid rounded" alt="Item">
                                                 </td>
-                                                <td class="text-center">
-                                                    <div class="info">
-                                                        <%= orders.product[i].name || orders.product[i].title %>
-                                                    </div>
+                                                <td class="text-center align-middle">
+                                                    <%= product.name || product.title %>
                                                 </td>
-                                                <td class="text-center">
-                                                    ₹<%= orders.product[i].price.toLocaleString() %>
+                                                <td class="text-center align-middle">
+                                                    <% if (!orders.status || (orders.status.toLowerCase() !== 'delivered' && orders.status.toLowerCase() !== 'canceled'  && orders.status.toLowerCase() !== 'pending' )) { %>
+                                                        <form id="cancelForm-<%= product._id %>">
+                                                            <input type="hidden" name="productId" value="<%= product._id %>">
+                                                            <input type="hidden" name="orderId" value="<%= orders._id %>">
+                                                            <label for="cancelQuantity-<%= product._id %>">Cancel Quantity:</label>
+                                                            <input type="number" id="cancelQuantity-<%= product._id %>" name="cancelQuantity" min="1" max="<%= product.quantity %>" required>
+                                                            <button type="button" class="btn btn-danger" onclick="confirmCancel('<%= orders._id %>', '<%= product._id %>')">Cancel</button>
+                                                        </form>
+                                                    <% } %>
+                                                    
+                                                    
                                                 </td>
-                                                <td class="text-center">
-                                                    <%= orders.product[i].quantity %>
+                                                <td class="text-center align-middle">
+                                                    ₹<%= product.regularPrice %>
                                                 </td>
-                                                <td class="text-center">
-                                                    ₹<%= (parseInt(orders.product[i].price) * parseInt(orders.product[i].quantity)).toLocaleString() %>
+                                               
+                                                <td class="text-center align-middle">
+                                                    ₹<%= product.price %>
+                                                </td>
+                                                <td class="text-center align-middle">
+                                                    <%= product.quantity %>
+                                                </td>
+                                                <td class="text-center align-middle">
+                                                    ₹<%= (product.price * product.quantity).toLocaleString() %>
                                                 </td>
                                             </tr>
-                                            <% totalProductPrice += parseInt(orders.product[i].price) * parseInt(orders.product[i].quantity); %>
+                                            <% totalProductPrice += product.price * product.quantity; %>
                                         <% } %>
+                                
                                         <% let discount = totalProductPrice - orders.totalPrice; %>
-                                        <td class="text-center">
-                                            <%= discount.toLocaleString() %>
-                                        </td>
-                                        <td class="text-center">
-                                            ₹<%= orders.totalPrice.toLocaleString() %>
-                                        </td>
+                                       
+                                        <tr>
+                                            <td colspan="6"></td>
+                                            <td class="text-center align-middle">
+                                              Grand Total
+                                            </td>
+                                            <td class="text-center align-middle">
+                                                ₹<%= orders.totalPrice.toLocaleString() %>
+                                            </td>
+                                        </tr>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="8" class="text-center align-middle">No active products</td>
+                                        </tr>
                                     <% } %>
-                                    <input type="hidden" name="" id="orderId" value="<%= orders._id %>">
                                 </tbody>
+                                
+
                             </table>
                         </div>
                     </div>

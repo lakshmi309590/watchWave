@@ -111,7 +111,7 @@ function generateOtp() {
 const signUpUser = async (req, res) => {
     console.log(req.body);
     try {
-        const { email,Name,phone } = req.body;
+        const { email,Name } = req.body;
         const findUser = await User.findOne({ email });
         if (req.body.password === req.body.cPassword) {
             if (!findUser) {
@@ -240,11 +240,10 @@ const resendOtp = async (req, res) => {
 
 
 function startCountdown() {
-    var seconds = 60;
-    var countdownElement = document.getElementById('countdown');
-    var resendLink = document.getElementById('resendLink');
+    let seconds = 60;
+    let countdownElement = document.getElementById('countdown');
 
-    var countdownInterval = setInterval(function () {
+    const countdownInterval = setInterval(function () {
         seconds--;
         countdownElement.innerText = seconds;
 
@@ -315,6 +314,8 @@ const userLogin = async (req, res) => {
 
 const getLogoutUser = async (req, res) => {
     try {
+        // req.session.admin = null
+        // req.session.user = null
         req.session.destroy((err) => {
             if (err) {
                 console.log(err.message);
@@ -358,7 +359,7 @@ const getProductDetailsPage = async (req, res) => {
         }
     } catch (error) {
         console.log(error.message);
-        res.status(500).render('error', { message: 'An error occurred' });
+        
     }
 };
 
@@ -366,30 +367,48 @@ const getProductDetailsPage = async (req, res) => {
 const getShopPage = async (req, res) => {
     try {
         const user = req.session.id;
-        const products = await Product.find({ isBlocked: false });
-        const count = await Product.find({ isBlocked: false }).count()
+
+        // Retrieve all products that are not blocked
+        let productsQuery = { isBlocked: false };
+
+        // Check if a category filter is applied
+        if (req.query.category) {
+            // Assuming category is a string field in the Product model
+            productsQuery.category = req.query.category;
+        }
+
+        const products = await Product.find(productsQuery);
+
+        // Count total number of products
+        const count = await Product.countDocuments(productsQuery);
+
+        // Retrieve categories that are listed
         const categories = await Category.find({ isListed: true });
 
+        // Pagination
         let itemsPerPage = 6;
         let currentPage = parseInt(req.query.page) || 1;
         let startIndex = (currentPage - 1) * itemsPerPage;
         let endIndex = startIndex + itemsPerPage;
-        let totalPages = Math.ceil(products.length / 6);
+        let totalPages = Math.ceil(products.length / itemsPerPage);
         const currentProduct = products.slice(startIndex, endIndex);
 
         res.render("user/shop", {
             user: user,
             product: currentProduct,
             category: categories,
-            count: count, // You might need to define `count` somewhere
-            totalPages,
-            currentPage
+            count: count,
+            totalPages: totalPages,
+            currentPage: currentPage,
+            selectedCategory: req.query.category || null,
+            selectedBrand: req.query.brand || null
         });
     } catch (error) {
         console.log(error.message);
+        // Handle error appropriately, such as rendering an error page
+        res.status(500).send("Internal Server Error");
     }
 }
-
 
 const searchProducts = async (req, res) => {
     try {
@@ -426,7 +445,7 @@ const searchProducts = async (req, res) => {
             })
 
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
     }
 }
 
@@ -434,31 +453,32 @@ const filterProduct = async (req, res) => {
     try {
         const user = req.session.user;
         const categoryId = req.query.category;
-
-        console.log('User:', user);
-        console.log('categoryId:', categoryId);
-
         const findCategory = categoryId ? await Category.findById(categoryId) : null;
-
-        console.log('findCategory:', findCategory);
-
         const query = {
             isBlocked: false,
         };
 
         if (findCategory) {
-            query.category = findCategory._id; // Use the ObjectId directly
+            query.category = findCategory._id;
         }
 
-        console.log('query:', query);
+        if (req.query.priceRange) {
+            const priceRange = req.query.priceRange.split('-');
+            query.salePrice = { $gte: parseInt(priceRange[0]), $lte: parseInt(priceRange[1]) };
+        }
 
-        // Ensure products exist with the specified category ID
-        const findProducts = await Product.find(query).populate('category');
-        console.log('findProducts:', findProducts);
+        const sortOptions = {};
+        if (req.query.sortBy === 'priceLowToHigh') {
+            sortOptions.salePrice = 1;
+        } else if (req.query.sortBy === 'priceHighToLow') {
+            sortOptions.salePrice = -1;
+        } else if (req.query.sortBy === 'releaseDate') {
+            sortOptions.createdOn = 1;
+        }
 
-        const categories = await Category.find({ isListed: true });
-        console.log('categories:', categories);
+        const findProducts = await Product.find(query).sort(sortOptions);
 
+       
         let itemsPerPage = 6;
         let currentPage = parseInt(req.query.page) || 1;
         let startIndex = (currentPage - 1) * itemsPerPage;
@@ -466,22 +486,20 @@ const filterProduct = async (req, res) => {
         let totalPages = Math.ceil(findProducts.length / itemsPerPage);
         const currentProduct = findProducts.slice(startIndex, endIndex);
 
-        console.log('currentPage:', currentPage);
-        console.log('totalPages:', totalPages);
-        console.log('currentProduct:', currentProduct);
+        const categories = await Category.find({ isListed: true }); // Fetch categories here
 
-        res.render('user/shop', {
+        res.render("user/shop", {
             user: user,
             product: currentProduct,
-            category: categories,
+            category: categories, 
             totalPages,
             currentPage,
             selectedCategory: categoryId || null,
         });
 
     } catch (error) {
-        console.log('Error:', error.message);
-        res.status(500).send('Internal Server Error');
+        console.log(error.message);
+        res.status(500).send("Internal Server Error");
     }
 };
 
@@ -490,6 +508,7 @@ const filterProduct = async (req, res) => {
 const filterByPrice = async (req, res) => {
     try {
         const user = req.session.user
+        
         const categories = await Category.find({ isListed: true });
         console.log(req.query);
         const findProducts = await Product.find({
@@ -512,6 +531,7 @@ const filterByPrice = async (req, res) => {
             user: user,
             product: currentProduct,
             category: categories,
+           
             totalPages,
             currentPage,
         });
@@ -521,7 +541,6 @@ const filterByPrice = async (req, res) => {
         console.log(error.message);
     }
 }
-
 
 const getSortProducts = async (req, res) => {
     try {
@@ -555,6 +574,10 @@ const getSortProducts = async (req, res) => {
         res.json({ status: false, error: error.message });
     }
 };
+
+
+
+
 
 
 
