@@ -175,6 +175,7 @@ const changeQuantity = async (req, res) => {
                     }
                 )
                 const totalAmount = findProduct.salePrice
+                console.log(totalAmount,"00000000000000000000")
 
 
                 // console.log(totalAmount,"totsll");
@@ -182,6 +183,7 @@ const changeQuantity = async (req, res) => {
                     // console.log('iam here inside the cart', quantityUpdated, 'ok');
 
                     res.json({ status: true, quantityInput: newQuantity,count:count, totalAmount: totalAmount })
+
                 } else {
                     res.json({ status: false, error: 'cart quantity is less' });
 

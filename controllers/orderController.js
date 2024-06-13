@@ -65,12 +65,10 @@ const orderPlaced = async (req, res) => {
             // Single product order handling
         } else {
             console.log("from cart");
-            const { totalPrice, addressId, payment } = req.body;
+            const { addressId, payment } = req.body;
             const userId = req.session.user;
             const findUser = await User.findOne({ _id: userId });
             const productIds = findUser.cart.map(item => item.productId);
-            const grandTotal = req.session.grandTotal;
-            console.log(grandTotal, "grandTotal");
 
             const findAddress = await Address.findOne({ 'address._id': addressId });
 
@@ -81,19 +79,28 @@ const orderPlaced = async (req, res) => {
                     productId: item.productId,
                     quantity: item.quantity
                 }));
+                console.log(cartItemQuantities, "cartItemQuantities");
 
-                const orderedProducts = findProducts.map((item, index) => ({
-                    _id: item._id,
-                    price: item.salePrice,
-                    name: item.productName,
-                    image: item.productImage[0],
-                    quantity: cartItemQuantities.find(cartItem => cartItem.productId.toString() === item._id.toString()).quantity,
-                    orderIndex: index // Ensure order is preserved
-                }));
+                // Calculate total price based on selected quantities and product prices
+                let grandTotal = 0;
+                const orderedProducts = findProducts.map((item, index) => {
+                    const quantity = cartItemQuantities.find(cartItem => cartItem.productId.toString() === item._id.toString()).quantity;
+                    const totalItemPrice = item.salePrice * quantity;
+                    grandTotal += totalItemPrice; // Add to grand total
+                    return {
+                        _id: item._id,
+                        price: item.salePrice,
+                        name: item.productName,
+                        image: item.productImage[0],
+                        quantity: quantity,
+                        orderIndex: index, // Ensure order is preserved
+                        totalItemPrice: totalItemPrice // Total price for each product in the order
+                    };
+                });
 
                 const newOrder = new Order({
                     product: orderedProducts,
-                    totalPrice: grandTotal,
+                    totalPrice: grandTotal, // Set calculated grand total
                     address: desiredAddress,
                     payment: payment,
                     userId: userId,

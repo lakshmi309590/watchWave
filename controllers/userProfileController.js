@@ -9,10 +9,12 @@ const bcrypt =require("bcryptjs");
 const getUserProfile = async(req,res)=>{
     try{
         console.log(req.session.user);
+        console.log(req.session.grandTotal,"grandToal user");
         const userId = req.session.user
         const userData =await User.findById({_id:userId});
         const addressData =await Address.findOne({userId:userId})
         const orderData = await Order.find({ userId: userId }).sort({ createdOn: -1 })
+        console.log(orderData,"orderData")
         res.render("user/profile",{user:userData,userAddress:addressData,order: orderData })
     }catch(error){
         console.log(error.message)
