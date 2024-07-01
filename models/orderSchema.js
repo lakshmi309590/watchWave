@@ -21,6 +21,10 @@ const orderSchema = Mongoose.Schema({
         type : String,
         required : true
     },
+    couponDiscount: {
+        type: Number,
+        default: 0
+    },
     status : {
         type : String,
         required : true
@@ -31,6 +35,9 @@ const orderSchema = Mongoose.Schema({
     },
     date : {
         type : String,
+    },
+    offerPrice:{
+        type:Number
     }
 })
 

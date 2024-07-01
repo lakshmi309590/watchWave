@@ -29,6 +29,8 @@ Router.get("/listCategory", isAdmin,categoryController.getListCategory)
 Router.get("/unListCategory", isAdmin,categoryController.getUnlistCategory)
 Router.get("/editCategory",isAdmin, categoryController.getEditCategory)
 Router.post("/editCategory/:id",isAdmin, categoryController.editCategory)
+Router.post("/addCategoryOffer", isAdmin, categoryController.addCategoryOffer)
+Router.post("/removeCategoryOffer", isAdmin, categoryController.removeCategoryOffer)
 
 // Multer Settings
 const multer = require("multer")
@@ -53,4 +55,18 @@ Router.get("/orderList",isAdmin,  orderController.getOrderListPageAdmin)
 Router.get("/orderDetailsAdmin",isAdmin,  orderController.getOrderDetailsPageAdmin)
 Router.get("/changeStatus",isAdmin,orderController.changeOrderStatus)
 
+
+// Coupon Management
+Router.get("/coupon", isAdmin, adminController.getCouponPageAdmin)
+Router.post("/createCoupon", isAdmin, adminController.createCoupon)
+Router.post("/deleteCoupon/:id", adminController.deleteCoupon);
+
+Router.get("/salesReport", isAdmin, adminController.getSalesReportPage)
+Router.get("/salesToday", isAdmin, adminController.salesToday)
+Router.get("/salesWeekly", isAdmin, adminController.salesWeekly)
+Router.get("/salesMonthly", isAdmin, adminController.salesMonthly)
+Router.get("/salesYearly", isAdmin, adminController.salesYearly)
+Router.get("/dateWiseFilter", isAdmin, adminController.dateWiseFilter)
+Router.post("/generatePdf", isAdmin, adminController.generatePdf)
+Router.post("/downloadExcel", isAdmin, adminController.downloadExcel)
 module.exports=Router;

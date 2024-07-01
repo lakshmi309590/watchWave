@@ -45,7 +45,7 @@ const getCartPage = async (req, res) => {
                 },
             },
         ]);
-        console.log("Data:", data); // Logging aggregated data for debugging
+        // console.log("Data:", data); // Logging aggregated data for debugging
 
         // Calculate total quantity and grand total
         let quantity = 0;
@@ -205,6 +205,7 @@ const deleteProduct = async (req, res) => {
     try {
         const id = req.query.id
         console.log(id, "id");
+        
         const userId = req.session.user
         const user = await User.findById(userId)
         const cartIndex = user.cart.findIndex(item => item.productId == id)

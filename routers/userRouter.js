@@ -6,12 +6,14 @@ const cartController = require("../controllers/cartController")
 const userProfileController = require("../controllers/userProfileController");
 const { isLogged } = require("../Authentication/auth")
 const orderController = require("../controllers/orderController")
-
+const wishlistController = require("../controllers/wishlistController")
 const productController = require("../controllers/productContollers")
+const walletController = require("../controllers/walletController")
+
 const multer = require("multer")
 const storage = require("../helpers/multer")
 const upload = multer({ storage: storage })
-// Router.get("/pageNotFound", userController.pageNotFound);
+Router.get("/pageNotFound", userController.pageNotFound);
 
 // User action
 Router.get("/", userController.home);
@@ -67,8 +69,15 @@ Router.get("/orderDetails", isLogged, orderController.getOrderDetailsPage)
 Router.get("/cancelOrder", isLogged, orderController.cancelOrder)
 Router.get("/return", isLogged, orderController.returnOrder)
 Router.get("/checkoutCart", isLogged, orderController.getCartCheckoutPage)
-
+Router.post("/applyCoupon", isLogged, userController.applyCoupon)
+Router.post("/verifyPayment", isLogged, orderController.verify)
 Router.get("/invoice", orderController.getInvoice)
+// Wishlist
+Router.get("/wishlist", isLogged, wishlistController.getWishlistPage)
+Router.post("/addToWishlist",isLogged, wishlistController.addToWishlist)
+Router.get("/deleteWishlist", isLogged, wishlistController.deleteItemWishlist)
 
-
+// Wallet
+Router.post("/addMoney", isLogged, walletController.addMoneyToWallet)
+Router.post("/verify-payment", isLogged, walletController.verify_payment)
 module.exports = Router;

@@ -7,7 +7,7 @@ const User = require('../models/userSchema');
 const { application } = require("express");
 const Category = require("../models/categorySchema");
 const Product = require("../models/productSchema");
-
+const Coupon = require("../models/couponSchema")
 
 // Define functions
 
@@ -541,6 +541,52 @@ const filterByPrice = async (req, res) => {
         console.log(error.message);
     }
 }
+const applyCoupon = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        // console.log(req.body);
+
+        // Find the selected coupon
+        const selectedCoupon = await Coupon.findOne({ name: req.body.coupon });
+        const couponName=req.body.coupon;
+        // Checking coupon validity
+        if (!selectedCoupon || !selectedCoupon.isList || selectedCoupon.expireOn < new Date()) {
+            console.log("Invalid coupon or expired");
+            return res.json({ invalidCoupon: true });
+        }
+
+        // Check if the coupon has already been used by the user
+        if (selectedCoupon.userId.includes(userId)) {
+            console.log("Coupon already used by user");
+            return res.json({ usedByUser: true });
+        }
+
+        // Calculate the adjusted grand total after applying the coupon
+        const total = parseInt(req.body.total);
+        const offerPrice = parseInt(selectedCoupon.offerPrice);
+        const gt = total - offerPrice;
+        console.log(gt,"gtttttt")
+        req.session.couponName= couponName;
+
+        console.log(`Adjusted total: ${total}, Offer price: ${offerPrice}, gt: ${gt}`);
+
+        // Update the coupon to mark it as used by the current user
+        await Coupon.updateOne(
+            { name: req.body.coupon },
+            { $addToSet: { userId: userId } }
+        );
+
+        // Respond with the adjusted grand total and coupon details
+        res.json({ gt: gt, offerPrice: offerPrice }); // Sending offerPrice back to client
+
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
 
 const getSortProducts = async (req, res) => {
     try {
@@ -606,5 +652,6 @@ module.exports = {
     getSortProducts,
     contact,
     about ,
-    shopProduct
+    shopProduct,
+    applyCoupon
 }

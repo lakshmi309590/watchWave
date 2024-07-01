@@ -127,6 +127,61 @@ const editCategory = async (req, res) => {
 };
 
 
+
+const addCategoryOffer = async (req, res) => {
+    try {
+        const percentage = parseInt(req.body.percentage);
+        const categoryId = req.body.categoryId;
+        const findCategory = await Category.findById(categoryId);
+
+        if (!findCategory) {
+            return res.status(404).json({ status: false, message: 'Category not found' });
+        }
+
+        await Category.updateOne(
+            { _id: categoryId },
+            { $set: { categoryOffer: percentage } }
+        );
+
+        const productData = await Product.find({ category: categoryId });
+
+        for (const product of productData) {
+            product.salePrice = product.regularPrice - Math.floor(product.regularPrice * (percentage / 100));
+            await product.save();
+        }
+
+        res.json({ status: true, message: 'Category offer added successfully' });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ status: false, message: 'Server error' });
+    }
+};
+
+const removeCategoryOffer = async (req, res) => {
+    try {
+        const categoryId = req.body.categoryId;
+        const findCategory = await Category.findById(categoryId);
+
+        if (!findCategory) {
+            return res.status(404).json({ status: false, message: 'Category not found' });
+        }
+
+        const productData = await Product.find({ category: categoryId });
+
+        for (const product of productData) {
+            product.salePrice = product.regularPrice;
+            await product.save();
+        }
+
+        findCategory.categoryOffer = 0;
+        await findCategory.save();
+
+        res.json({ status: true, message: 'Category offer removed successfully' });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ status: false, message: 'Server error' });
+    }
+};
 module.exports = {
     getCategoryInfo,
     addCategory,
@@ -135,4 +190,7 @@ module.exports = {
     getUnlistCategory,
     editCategory,
     getEditCategory,
+    addCategoryOffer,
+    
+    removeCategoryOffer
 }

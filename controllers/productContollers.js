@@ -215,33 +215,36 @@ const getUnblockProduct = async (req, res) => {
 
 const addProductOffer = async (req, res) => {
     try {
-        const { productId, percentage } = req.body;
-        const findProduct = await Product.findOne({ _id: productId });
+        // console.log(req.body);
+        const { productId, percentage } = req.body
+        const findProduct = await Product.findOne({ _id: productId })
+        // console.log(findProduct);
 
-        findProduct.salePrice = findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100));
-        findProduct.productOffer = parseInt(percentage);
-        await findProduct.save();
+        findProduct.salePrice = findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100))
+        findProduct.productOffer = parseInt(percentage)
+        await findProduct.save()
 
-        res.json({ status: true });
+        res.json({ status: true })
+
     } catch (error) {
         console.log(error.message);
     }
-};
 
-const removeProductOffer = async (req, res) => {
-    try {
-        const { productId } = req.body;
-        const findProduct = await Product.findOne({ _id: productId });
-        const percentage = findProduct.productOffer;
+}
+const removeProductOffer= async(req,res)=>{
+    try{
+        const {productId}=req.body;
+        const findProduct = await Product.findOne({_id:productId})
+        const percentage=findProduct.productOffer
+       findProduct.salePrice =findProduct.salePrice + Math.floor(findProduct.regularPrice*(percentage/100))
+       findProduct.productOffer=0
+       await findProduct.save()
+       res.json({status:true})
 
-        findProduct.salePrice = findProduct.salePrice + Math.floor(findProduct.regularPrice * (percentage / 100));
-        findProduct.productOffer = 0;
-        await findProduct.save();
-        res.json({ status: true });
-    } catch (error) {
-        console.log(error.message);
+    }catch(error){
+        console.log(error.message)
     }
-};
+}
 
 module.exports = {
     getProductAddPage,

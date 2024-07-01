@@ -8,13 +8,13 @@ const bcrypt =require("bcryptjs");
 
 const getUserProfile = async(req,res)=>{
     try{
-        console.log(req.session.user);
-        console.log(req.session.grandTotal,"grandToal user");
+        // console.log(req.session.user);
+        // console.log(req.session.grandTotal,"grandToal user");
         const userId = req.session.user
         const userData =await User.findById({_id:userId});
         const addressData =await Address.findOne({userId:userId})
         const orderData = await Order.find({ userId: userId }).sort({ createdOn: -1 })
-        console.log(orderData,"orderData")
+        // console.log(orderData,"orderData")
         res.render("user/profile",{user:userData,userAddress:addressData,order: orderData })
     }catch(error){
         console.log(error.message)
@@ -337,92 +337,69 @@ const postNewPassword = async (req, res) => {
         res.status(500).render('user/reset-password', { message: 'An error occurred while changing password' });
     }
 };
-const verifyReferalCode = async (req, res) => {
+
+   
+    const  verifyReferalCode  = async (req, res) => {
     try {
-        const referalCode = req.body.referalCode
-        const currentUser = await User.findOne({ _id: req.session.user })
-        // console.log("currentUser=>>>", currentUser);
-        const codeOwner = await User.findOne({ referalCode: referalCode })
-        // console.log("codeOwner=>>>", codeOwner);
+        const { referalCode } = req.body;
+        console.log("Referral Code Received:", referalCode);
 
-        if (currentUser.redeemed === true) {
-            console.log("You have already redeemed a referral code before!");
-            res.json({ message: "You have already redeemed a referral code before!" })
-            return
+        if (!referalCode) {
+            return res.json({ message: "No referral code provided!" });
         }
 
-        if (!codeOwner || codeOwner._id.equals(currentUser._id)) {
-            console.log("Invalid referral code!");
-            res.json({ message: "Invalid referral code!" })
-            return
+        const currentUser = await User.findById(req.session.user);
+        if (!currentUser) {
+            return res.json({ message: "Current user not found!" });
         }
 
-        const alreadyRedeemed = codeOwner.redeemedUsers.includes(currentUser._id)
+        if (currentUser.redeemed) {
+            return res.json({ message: "You have already redeemed a referral code before!" });
+        }
 
-        if (alreadyRedeemed) {
-                      console.log("You have already used this referral code!");
-            res.json({ message: "You have already used this referral code!" })
-            return
-        } else {
+        const codeOwner = await User.findOne({ referalCode });
+        if (!codeOwner) {
+            return res.json({ message: "Invalid referral code!" });
+        }
 
-            await User.updateOne(
-                { _id: req.session.user },
-                {
-                    $inc: { wallet: 100 },
-                    $push: {
-                        history: {
-                            amount: 100,
-                            status: "credit",
-                            date: Date.now()
-                        }
+        if (codeOwner._id.equals(currentUser._id)) {
+            return res.json({ message: "Invalid referral code!" });
+        }
+
+        if (codeOwner.redeemedUsers && codeOwner.redeemedUsers.includes(currentUser._id)) {
+            return res.json({ message: "You have already used this referral code!" });
+        }
+
+        await User.updateOne(
+            { _id: req.session.user },
+            {
+                $inc: { wallet: 100 },
+                $set: { redeemed: true }
+            }
+        );
+
+        await User.updateOne(
+            { _id: codeOwner._id },
+            {
+                $inc: { wallet: 200 },
+                $push: {
+                    history: {
+                        amount: 200,
+                        status: "credit",
+                        date: Date.now()
                     }
-                }
-            )
-                .then(data => console.log("currentUser Wallet = > ", data))
+                },
+                $push: { redeemedUsers: currentUser._id }
+            }
+        );
 
-
-
-            await User.updateOne(
-                { _id: codeOwner._id },
-                {
-                    $inc: { wallet: 200 },
-                    $push: {
-                        history: {
-                            amount: 200,
-                            status: "credit",
-                            date: Date.now()
-                        }
-                    }
-                }
-            )
-                .then(data => console.log("codeOwner Wallet = > ", data))
-
-            await User.updateOne(
-                { _id: codeOwner._id },
-                { $set: { referalCode: "" } }
-            )
-
-            await User.updateOne(
-                { _id: req.session.user },
-                { $set: { redeemed: true } }
-            )
-
-            await User.updateOne(
-                { _id: codeOwner._id },
-                { $push: { redeemedUsers: currentUser._id } }
-            )
-
-            console.log("Referral code redeemed successfully!");
-
-            res.json({ message: "Referral code verified successfully!" })
-            return
-
-        }
-
+        res.json({ message: "Referral code redeemed successfully!" });
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
+        res.status(500).json({ message: "An error occurred while verifying the referral code." });
     }
-}
+};
+
 
 
 module.exports = {
@@ -439,5 +416,7 @@ module.exports = {
     getResetPassPage,
     postNewPassword,
     verifyReferalCode
-}
+};
+
+
 

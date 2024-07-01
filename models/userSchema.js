@@ -1,28 +1,26 @@
-const mongoose =require('mongoose');
-const{Schema,ObjectId}= mongoose;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const UserSchema =new Schema({
-    Name:{
-        type:String,
-        require:true
-    },
-    
-    email:{
-        type:String,
-        require:true
-    },
-    password:{
-        type:String,
-        require:true
-    },
-    phone:{ 
+const UserSchema = new Schema({
+    Name: {
         type: String,
-         require: true
-     },
-
-    Status:{
-        type:String,
-        default:'Active'
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    phone: { 
+        type: String,
+        required: true
+    },
+    Status: {
+        type: String,
+        default: 'Active'
     },
     isBlocked: {
         type: Boolean,
@@ -30,6 +28,13 @@ const UserSchema =new Schema({
     },
     cart: {
         type: Array
+    },
+    wishlist: {
+        type: Array
+    },
+    wallet: {
+        type: Number,
+        default: 0
     },
     Address: [{
         Name: {
@@ -50,8 +55,24 @@ const UserSchema =new Schema({
         Mobile: {
             type: Number
         }
+    }],
+    history: {
+        type: Array,
+        default: []
+    },
+    referalCode: {
+        type: String,
+        required: true
+    },
+    redeemed: {
+        type: Boolean,
+        default: false
+    },
+    redeemedUsers: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
     }]
-})
+});
 
-const User= mongoose.model('User',UserSchema);
-module.exports=User;
+const User = mongoose.model('User', UserSchema);
+module.exports = User;
