@@ -8,7 +8,7 @@ const { application } = require("express");
 const Category = require("../models/categorySchema");
 const Product = require("../models/productSchema");
 const Coupon = require("../models/couponSchema")
-
+const Banner = require("../models/bannerSchema")
 // Define functions
 
 const pageNotFound = async (req, res) => {
@@ -44,27 +44,28 @@ const about = async (req, res) => {
 const home = async (req, res) => {
     try {
         const today = new Date().toISOString();
-        const user = req.session.user
-        const userData = await User.findOne({})
-        const productData = await Product.find({isBlocked:false}).sort({id:-1}).limit(4)
+        const user = req.session.user;
+        const userData = await User.findOne({});
+        const productData = await Product.find({ isBlocked: false }).sort({ id: -1 }).limit(4);
         const listedCategories = await Category.find({ isListed: true }).select('name');
-        const categoryNames = listedCategories.map(category => category.name);
-         // Temporary debugging code
-         const allProducts = await Product.find();
-         allProducts.forEach(product => {
-             console.log(product.id, product.category);
-         });
- 
         
-        if(user){
-        res.render('user/home', {user:userData, products:productData ,categoryNames: categoryNames });
-        }else{
-            res.render("user/home",{products:productData,categoryNames: categoryNames})
+        const categoryNames = listedCategories.map(category => category.name);
+
+        const findBanner = await Banner.find({
+            startDate: { $lt: new Date(today) },
+            endDate: { $gt: new Date(today) }
+        });
+  console.log(findBanner,"bbbbbbbs")
+        if (user) {
+            res.render('user/home', { user: userData, products: productData, categoryNames: categoryNames, banner: findBanner });
+        } else {
+            res.render('user/home', { products: productData, categoryNames: categoryNames, banner: findBanner });
         }
     } catch (error) {
         console.log(error);
     }
-}
+};
+
 
 const securePassword = async (password) => {
     try {
@@ -270,6 +271,8 @@ const userLogin = async (req, res) => {
         const listedCategories = await Category.find({ isListed: true }).select('name');
         const categoryNames = listedCategories.map(category => category.name);
         const findUser = await User.findOne({ email: email });
+        const banners = await Banner.find();
+        
         console.log("Found User:", findUser);
 
         const products = await Product.find();
@@ -292,7 +295,7 @@ const userLogin = async (req, res) => {
                         console.log("User is blocked by admin");
                         return res.status(403).render("user/login", { message: "User is blocked by admin" });
                     } else {
-               return  res.render('user/home', { products:products,categoryNames: categoryNames }); // Redirect to home page or wherever appropriate
+               return  res.render('user/home', { products:products,categoryNames: categoryNames,banner: banners }); // Redirect to home page or wherever appropriate
                     }
                 } else {
                     console.log("Password is not matching");
@@ -543,48 +546,34 @@ const filterByPrice = async (req, res) => {
 }
 const applyCoupon = async (req, res) => {
     try {
-        const userId = req.session.user;
-        // console.log(req.body);
-
-        // Find the selected coupon
-        const selectedCoupon = await Coupon.findOne({ name: req.body.coupon });
-        const couponName=req.body.coupon;
-        // Checking coupon validity
-        if (!selectedCoupon || !selectedCoupon.isList || selectedCoupon.expireOn < new Date()) {
-            console.log("Invalid coupon or expired");
-            return res.json({ invalidCoupon: true });
+        const userId = req.session.user
+        console.log(req.body);
+        const selectedCoupon = await Coupon.findOne({ name: req.body.coupon })
+        // console.log(selectedCoupon);
+        if (!selectedCoupon) {
+            console.log("no coupon");
+            res.json({ noCoupon: true })
+        } else if (selectedCoupon.userId.includes(userId)) {
+            console.log("already used");
+            res.json({ used: true })
+        } else {
+            console.log("coupon exists");
+            await Coupon.updateOne(
+                { name: req.body.coupon },
+                {
+                    $addToSet: {
+                        userId: userId
+                    }
+                }
+            );
+            const gt = parseInt(req.body.total) - parseInt(selectedCoupon.offerPrice);
+            console.log(gt, "----");
+            res.json({ gt: gt, offerPrice: parseInt(selectedCoupon.offerPrice) })
         }
-
-        // Check if the coupon has already been used by the user
-        if (selectedCoupon.userId.includes(userId)) {
-            console.log("Coupon already used by user");
-            return res.json({ usedByUser: true });
-        }
-
-        // Calculate the adjusted grand total after applying the coupon
-        const total = parseInt(req.body.total);
-        const offerPrice = parseInt(selectedCoupon.offerPrice);
-        const gt = total - offerPrice;
-        console.log(gt,"gtttttt")
-        req.session.couponName= couponName;
-
-        console.log(`Adjusted total: ${total}, Offer price: ${offerPrice}, gt: ${gt}`);
-
-        // Update the coupon to mark it as used by the current user
-        await Coupon.updateOne(
-            { name: req.body.coupon },
-            { $addToSet: { userId: userId } }
-        );
-
-        // Respond with the adjusted grand total and coupon details
-        res.json({ gt: gt, offerPrice: offerPrice }); // Sending offerPrice back to client
-
     } catch (error) {
         console.log(error.message);
-        res.status(500).json({ error: "Internal server error" });
     }
-};
-
+}
 
 
 

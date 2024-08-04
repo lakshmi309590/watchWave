@@ -106,6 +106,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script>
+    $('#addCategoryForm').submit(function(event) {
+    event.preventDefault(); // Prevent the form from submitting the default way
+
+    var formData = $(this).serialize();
+
+    $.ajax({
+        url: '/admin/addCategory',
+        method: 'POST',
+        data: formData,
+        success: function(response) {
+            if (response.success) {
+                Swal.fire('Success', response.message, 'success').then(() => {
+                    location.reload();
+                });
+            }
+        },
+        error: function(response) {
+            if (response.responseJSON && !response.responseJSON.success) {
+                Swal.fire('Error', response.responseJSON.message, 'error');
+            } else {
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+            }
+        }
+    });
+});
 function confirmList(categoryId) {
     Swal.fire({
         title: 'List Category',

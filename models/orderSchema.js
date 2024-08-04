@@ -1,46 +1,72 @@
-const Mongoose = require("mongoose")
+const mongoose = require('mongoose');
 
-const orderSchema = Mongoose.Schema({
-    product : {
-        type : Array,
-        required : true
+const productSchema = new mongoose.Schema({
+    name: String,
+    categoryId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category', 
     },
-    totalPrice : {
-        type : Number,
-        required : true
+    price: Number,
+    quantity:Number,
+    image:[]
+
+});
+
+const orderSchema = new mongoose.Schema({
+    product: {
+        type: [productSchema], 
+        required: true,
     },
-    address : {
-        type : Array,
-        required : true
+    totalPrice: {
+        type: Number,
+        required: true,
     },
-    payment : {
-        type : String,
-        required : true
+    quantity:{
+        type:Number,
+        
     },
-    userId : {
-        type : String,
-        required : true
+    address: {
+        type: Array,
+        required: true,
+    },
+    payment: {
+        type: String,
+        default: 'pending',
+        required: true,
+    },
+    userId: {
+        type: String,
+        required: true,
+    },
+    status: {
+        type: String,
+        default: 'Pending',
+        required: true,
+    },
+    createdOn: {
+        type: Date,
+        default: Date.now,
+        required: true,
+    },
+    date: {
+        type: String,
+    },
+    cancel: {
+        type: Array,
+    },
+    return: {
+        type: Array,
     },
     couponDiscount: {
         type: Number,
-        default: 0
+        default: 0,
     },
-    status : {
-        type : String,
-        required : true
+    razorpayOrderId: {
+        type: String,
     },
-    createdOn : {
-        type : Date,
-        required : true,
-    },
-    date : {
-        type : String,
-    },
-    offerPrice:{
-        type:Number
-    }
-})
+    
+});
 
-const Order = Mongoose.model("Order",orderSchema)
+const Order = mongoose.model('Order', orderSchema);
 
-module.exports=Order
+module.exports = Order;

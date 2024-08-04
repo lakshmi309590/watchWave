@@ -4,8 +4,8 @@ const mongodb = require("mongodb")
 
 const getCartPage = async (req, res) => {
     try {
-        const id = req.session.user; // Assuming req.session.user contains the user ID
-        console.log("User ID:", id); // Logging user ID for debugging
+        const id = req.session.user;
+        console.log("User ID:", id);
         const user = await User.findOne({ _id: id });
         console.log("User:", user); // Logging user object for debugging
 
@@ -44,6 +44,19 @@ const getCartPage = async (req, res) => {
                     as: 'productDetails',
                 },
             },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'productDetails.category',
+                    foreignField: '_id',
+                    as: 'categoryDetails',
+                },
+            },
+            {
+                $addFields: {
+                    categoryDetails: { $arrayElemAt: ["$categoryDetails", 0] }
+                }
+            }
         ]);
         // console.log("Data:", data); // Logging aggregated data for debugging
 

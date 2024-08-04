@@ -33,6 +33,12 @@ const productSchema = new mongoose.Schema({
     quantity: {
         type: Number,
         required: true,
+        validate: {
+            validator: function (v) {
+                return !isNaN(v);
+            },
+            message: props => `${props.value} is not a valid number for quantity!`
+        }
     },
     isBlocked: {
         type: Boolean,
